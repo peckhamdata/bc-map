@@ -28,10 +28,14 @@ describe('City Builder', () => {
     expect(city_builder.bezier_streets.length).toEqual(num_curves)
   })
 
-  // it('creates the diagonal streets', () => {
-
-  //   // expect an array of diagonal streets
-  // })
+  it('creates the diagonal streets', () => {
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+    city_builder.build_bezier_streets();
+    city_builder.build_diagonal_streets();
+    expect(city_builder.diagonal_streets.length).toEqual(285)
+  })
 
   // it('creates the cross streets', () => {
 
