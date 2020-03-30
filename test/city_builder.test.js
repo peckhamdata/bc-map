@@ -47,7 +47,18 @@ describe('City Builder', () => {
     expect(city_builder.cross_streets.length).toEqual(280)
   })
 
-  // it('adds the junctions', () => {
+  it('adds the junctions', () => {
+
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+    city_builder.build_bezier_streets();
+    city_builder.build_diagonal_streets();
+    city_builder.build_cross_streets();
+    city_builder.add_junctions();
+    // For each street
+
+    // See if it contains points that appear in other streets
 
   //   // expect the diagonal streets to be joined to the 
   //   // bezier streets
@@ -58,6 +69,6 @@ describe('City Builder', () => {
   //   // expect the bezier streets to join any other
   //   // bezier street they cross
     
-  // })
+  })
 
 })

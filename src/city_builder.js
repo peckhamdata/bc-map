@@ -1,4 +1,5 @@
 const Bezier = require('bezier-js');
+const bresenham = require("bresenham");
 
 module.exports = class CityBuilder {
   constructor(seed, num_curves) {
@@ -106,9 +107,6 @@ module.exports = class CityBuilder {
                                          y: curve_points[k].y},
                                  end:   {x: prev_curve_points[k+offset].x,
                                          y: prev_curve_points[k+offset].y}}}
-        // Join to existing curve streets
-        this.bezier_streets[i].junctions.push({id: street.id, address: k})
-        this.bezier_streets[i-1].junctions.push({id: street.id, address: k+offset})
         this.diagonal_streets.push(street)
         
         lines.push(street)
@@ -151,4 +149,92 @@ module.exports = class CityBuilder {
 
     }
   }   
+
+  add_junctions() {
+
+    function to_int (point) {
+      return Math.floor(point.x) * 1000 + Math.floor(point.y)
+    }
+
+    var street_points = {}
+    this.bezier_streets.forEach(street => {
+      var points = street.geometry.getLUT(this.curve_num_points)
+      street_points[street.id] = points.map(function(point) {
+        return to_int(point)
+      });
+    })
+    this.diagonal_streets.forEach(street => {
+      var points = bresenham(street.geometry.start.x,
+                             street.geometry.start.y,
+                             street.geometry.end.x,
+                             street.geometry.end.y)
+      street_points[street.id] = points.map(function(point) {
+        return to_int(point)
+      });
+    })
+    this.cross_streets.forEach(street => {
+      var points = bresenham(street.geometry.start.x,
+                             street.geometry.start.y,
+                             street.geometry.end.x,
+                             street.geometry.end.y)
+      street_points[street.id] = points.map(function(point) {
+        return to_int(point)
+      });
+    })
+
+    // Decide where to put this
+    for (const [key, value] of Object.entries(street_points)) {
+
+      var street;
+      street = this.bezier_streets.filter(obj => {
+        return obj.id == parseInt(key, 0)
+      })
+      if (street.length === 0) {
+        street = this.diagonal_streets.filter(obj => {
+          return obj.id == parseInt(key, 0)
+        })
+      }
+      if (street.length === 0) {
+        street = this.cross_streets.filter(obj => {
+          return obj.id == parseInt(key, 0)
+        })
+      }
+      if (street.length !== 0) {
+        for (const [key_i, value_i] of Object.entries(street_points)) {
+          if (key != key_i) {
+            // No point trying to match with self
+            var result = value.filter(function (e) {
+              return value_i.includes(e);
+            });
+            result.forEach(function(point) {
+              try { 
+                street[0].junctions.push({id: key_i, address:value.indexOf(point)})
+              }
+              catch(err) {
+                console.log(err)
+                console.log(street)
+                console.log(key)
+              }
+            })
+
+          }
+          // for (var cj=0; cj < num_c; cj++) {
+          //   var match = curves[cj].filter(function (e) {
+          //     return line_points.includes(e);
+          //   });
+
+
+            // match.forEach(function(point) {
+            //   street.junctions.push({id: cj, address:line_points.indexOf(point)})
+            //   streets[cj].junctions.push({id: street.id, address:curves[cj].indexOf(point)})
+            // })
+        }
+      }
+    }
+    // for each street go through its points and see if it matches
+    // a point in another street
+    // if it does make a junction    
+
+
+  }
 }
