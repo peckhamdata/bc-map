@@ -37,10 +37,15 @@ describe('City Builder', () => {
     expect(city_builder.diagonal_streets.length).toEqual(285)
   })
 
-  // it('creates the cross streets', () => {
-
-  //   // expect an array of cross streets
-  // })
+  it('creates the cross streets', () => {
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+    city_builder.build_bezier_streets();
+    city_builder.build_diagonal_streets();
+    city_builder.build_cross_streets();
+    expect(city_builder.cross_streets.length).toEqual(280)
+  })
 
   // it('adds the junctions', () => {
 
