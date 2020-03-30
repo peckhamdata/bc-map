@@ -1,6 +1,8 @@
 const hp = require("harry-plotter");
 const bresenham = require("bresenham");
 const CityBuilder = require('./src/city_builder.js')
+const fs = require('fs');
+
 
 const seed = 1024
 const num_curves = 64
@@ -38,6 +40,13 @@ plotter.init(function() {
   });
 
   plotter.write();
+  var all_streets = [].concat(city_builder.bezier_streets, city_builder.diagonal_streets, city_builder.cross_streets)
+  var street_data = JSON.stringify(all_streets, null, 2)
+
+  fs.appendFile('city.json', street_data, function (err) {
+    if (err) throw err;
+    console.log('Saved!');
+  });
 })
 
 

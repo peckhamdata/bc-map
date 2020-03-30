@@ -185,23 +185,11 @@ module.exports = class CityBuilder {
     // Decide where to put this
     for (const [key, value] of Object.entries(street_points)) {
 
-      var street;
-      street = this.bezier_streets.filter(obj => {
-        return obj.id == parseInt(key, 0)
-      })
-      if (street.length === 0) {
-        street = this.diagonal_streets.filter(obj => {
-          return obj.id == parseInt(key, 0)
-        })
-      }
-      if (street.length === 0) {
-        street = this.cross_streets.filter(obj => {
-          return obj.id == parseInt(key, 0)
-        })
-      }
+      var street = this.get_street(key)
       if (street.length !== 0) {
         for (const [key_i, value_i] of Object.entries(street_points)) {
           if (key != key_i) {
+            var this_street = this.get_street(key_i)
             // No point trying to match with self
             var result = value.filter(function (e) {
               return value_i.includes(e);
@@ -209,32 +197,33 @@ module.exports = class CityBuilder {
             result.forEach(function(point) {
               try { 
                 street[0].junctions.push({id: key_i, address:value.indexOf(point)})
+                this_street[0].junctions.push({id: key, address:value_i.indexOf(point)})
               }
               catch(err) {
                 console.log(err)
-                console.log(street)
-                console.log(key)
               }
             })
-
           }
-          // for (var cj=0; cj < num_c; cj++) {
-          //   var match = curves[cj].filter(function (e) {
-          //     return line_points.includes(e);
-          //   });
-
-
-            // match.forEach(function(point) {
-            //   street.junctions.push({id: cj, address:line_points.indexOf(point)})
-            //   streets[cj].junctions.push({id: street.id, address:curves[cj].indexOf(point)})
-            // })
         }
       }
     }
-    // for each street go through its points and see if it matches
-    // a point in another street
-    // if it does make a junction    
+  }
 
-
+  get_street(id) {
+    var street;
+    street = this.bezier_streets.filter(obj => {
+      return obj.id == parseInt(id, 0)
+    })
+    if (street.length === 0) {
+      street = this.diagonal_streets.filter(obj => {
+        return obj.id == parseInt(id, 0)
+      })
+    }
+    if (street.length === 0) {
+      street = this.cross_streets.filter(obj => {
+        return obj.id == parseInt(id, 0)
+      })
+    }
+    return street  
   }
 }
