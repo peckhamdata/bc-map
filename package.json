@@ -1,0 +1,28 @@
+{
+  "name": "bc-map",
+  "version": "0.0.1",
+  "description": "Map of Bezier City",
+  "main": "possible.js",
+  "dependencies": {
+    "bezier-js": "^2.5.1",
+    "bresenham": "^0.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peckhamdata/bc-map.git"
+  },
+  "keywords": [
+    "bezier",
+    "city"
+  ],
+  "author": "worldofchris",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/peckhamdata/bc-map/issues"
+  },
+  "homepage": "https://github.com/peckhamdata/bc-map#readme"
+}
