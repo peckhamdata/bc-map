@@ -42,8 +42,12 @@ function drawCurve(app, curve, offset) {
     );
   }
 
+  line.filters = [
+       new PIXI.filters.GlowFilter({ distance: 5, outerStrength: 2 })
+   ];
+
   // ctx.strokeStyle = "red";
-  app.stage.addChild(line);
+  app.addChild(line);
 
 }
 
@@ -72,10 +76,10 @@ line.lineStyle(1, 0xFF00FF, 1);
 //   //                            Math.floor(colour.blue));
 
   line.filters = [
-       new PIXI.filters.GlowFilter({ distance: 15, outerStrength: 2 })
+       new PIXI.filters.GlowFilter({ distance: 10, outerStrength: 2 })
    ];
 
-  app.stage.addChild(line);
+  app.addChild(line);
 }
 
 function drawPoints(ctx, points, offset) {

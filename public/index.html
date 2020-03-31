@@ -1,60 +1,58 @@
-<!DOCTYPE html>
-<html>
 <head>
-<style>
-canvas {
-    padding-left: 0;
-    padding-right: 0;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-    width: 1024px;
-}
-</style>
-<script src="pixi.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/pixi-filters.js"></script>
-<script src="map.js"></script>
-</head>
-<body bgcolor="white">
-<script type="text/javascript">
-
-let type = "WebGL"
-if(!PIXI.utils.isWebGLSupported()){
-  type = "canvas"
-}
-
-PIXI.utils.sayHello(type)
-
-//Create a Pixi Application
-let app = new PIXI.Application({width: 1024, height: 1024});
-var page_offset = {x:0, y:0}
-var colour = {red: 255, green: 0, blue: 0}
-//Add the canvas that Pixi automatically created for you to the HTML document
-document.body.appendChild(app.view);    
-
-fetch("city.json")
-  .then(response => response.json())
-  .then(json => {
-    console.log('loaded')
-    draw(json)
-  });
-
-function draw(data) { 
-        data.forEach(function(street){
-        if (street.type == "bezier") {
-            drawCurve(app, street.geometry, page_offset)
-        } else {
-            drawLine(app, {x:street.geometry.start.x,
-                           y:street.geometry.start.y},
-                          {x:street.geometry.end.x,
-                           y:street.geometry.end.y}, page_offset, colour);
+    <style>
+        body {
+            text-align: center;
         }
-        // street.junctions.forEach(function(junction){
-        //     drawPoints(ctx,  , page_offset)
-        // });
-    })
-}
+    </style>
 
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/pixi-filters.js"></script>
+    <script src="map.js"></script>
+    <script src="viewport.js"></script>
+</head>
+
+<body>
+    <script>
+        function rand(n)
+        {
+            return Math.round(Math.random() * n)
+        }
+
+        const app = new PIXI.Application({width: 1920, height: 1080, autoresize: true })
+        app.view.style.textAlign = 'center'
+        document.body.appendChild(app.view)
+
+        const viewport = app.stage.addChild(new Viewport.Viewport({ screenWidth: app.view.offsetWidth, screenHeight: app.view.offsetHeight, interaction: app.renderer.plugins.interaction }))
+        viewport
+            .drag()
+            .pinch()    
+            .wheel()
+            .decelerate()
+
+        var page_offset = {x:(1920/2)-512, y:(1080/2)-512}
+        var colour = {red: 255, green: 0, blue: 0}
+ 
+        fetch("city.json")
+          .then(response => response.json())
+          .then(json => {
+            console.log('loaded')
+            draw(json)
+          });
+
+        function draw(data) { 
+            data.forEach(function(street){
+                if (street.type == "bezier") {
+                    drawCurve(viewport, street.geometry, page_offset)
+                } else {
+                    drawLine(viewport, {x:street.geometry.start.x,
+                                   y:street.geometry.start.y},
+                                  {x:street.geometry.end.x,
+                                   y:street.geometry.end.y}, page_offset, colour);
+                }
+                // street.junctions.forEach(function(junction){
+                //     drawPoints(ctx,  , page_offset)
+                // });
+            })
+        }
+    </script>
 </body>
-</html>
