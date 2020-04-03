@@ -8,15 +8,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/pixi-filters.js"></script>
     <script src="map.js"></script>
+    <script src="bezier.js"></script>
     <script src="viewport.js"></script>
 </head>
 
 <body>
     <script>
-        function rand(n)
-        {
-            return Math.round(Math.random() * n)
-        }
 
         const app = new PIXI.Application({width: 1920, height: 1080, autoresize: true })
         app.view.style.textAlign = 'center'
@@ -30,29 +27,58 @@
             .decelerate()
 
         var page_offset = {x:(1920/2)-512, y:(1080/2)-512}
-        var colour = {red: 255, green: 0, blue: 0}
+        var colour = {red: 0, green: 255, blue: 255}
+        const colour_int = rgbToInt(Math.floor(colour.red), 
+                                    Math.floor(colour.green), 
+                                    Math.floor(colour.blue));
+
+        var colour_2 = {red: 255, green: 140, blue: 0}
+        const colour_int_2 = rgbToInt(Math.floor(colour_2.red), 
+                                    Math.floor(colour_2.green), 
+                                    Math.floor(colour_2.blue));
  
         fetch("city.json")
           .then(response => response.json())
           .then(json => {
             console.log('loaded')
             draw(json)
-          });
+
+        var curve = new Bezier((1920/2)+512, 40 , 1920/2+255, 1080 ,105, 1080/2);
+        var points = curve.getLUT(1024)
+        var index = 0
+        var z = .002
+
+        function myFunction() {
+          // viewport.moveCenter(viewport.center.x+2, viewport.center.y)
+          viewport.moveCenter(points[index].x, points[index].y)
+          viewport.zoomPercent(z)
+          console.log(viewport.scaled, index)
+          index+=1
+          if (index < points.length) {
+            setTimeout(myFunction, 10);
+          }
+        }
+
+        myFunction()
+
+        });
 
         function draw(data) { 
             data.forEach(function(street){
                 if (street.type == "bezier") {
-                    drawCurve(viewport, street.geometry, page_offset)
+                    drawCurve(viewport, street.geometry, page_offset, colour_int)
                 } else {
                     drawLine(viewport, {x:street.geometry.start.x,
                                    y:street.geometry.start.y},
                                   {x:street.geometry.end.x,
-                                   y:street.geometry.end.y}, page_offset, colour);
+                                   y:street.geometry.end.y}, page_offset, colour_int_2);
                 }
                 // street.junctions.forEach(function(junction){
                 //     drawPoints(ctx,  , page_offset)
                 // });
             })
         }
+
     </script>
 </body>
+

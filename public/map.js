@@ -17,10 +17,11 @@ function drawCircle(ctx, p, r, offset) {
   ctx.stroke();
 }
 
-function drawCurve(app, curve, offset) {
+function drawCurve(app, curve, offset, colour_int) {
 
   let line = new PIXI.Graphics();
-  line.lineStyle(1, 0xFFFFFF, 1);
+
+  line.lineStyle(1, colour_int, 1);
 
   offset = offset || { x:0, y:0 };
   var ox = offset.x;
@@ -43,7 +44,7 @@ function drawCurve(app, curve, offset) {
   }
 
   line.filters = [
-       new PIXI.filters.GlowFilter({ distance: 5, outerStrength: 2 })
+       new PIXI.filters.GlowFilter({ distance: 15, outerStrength: 2 })
    ];
 
   // ctx.strokeStyle = "red";
@@ -60,10 +61,16 @@ function rgbToHex(r, g, b) {
   return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
-function drawLine(app, p1, p2, offset, colour) {
+function rgbToInt(r, g, b) {
+  return parseInt(Number("0x" + componentToHex(r) + componentToHex(g) + componentToHex(b)), 10);
+}
+
+// 0xFF00FF
+
+function drawLine(app, p1, p2, offset, colour_int) {
 
 let line = new PIXI.Graphics();
-line.lineStyle(1, 0xFF00FF, 1);
+line.lineStyle(1, colour_int, 1);
 
   offset = offset || { x:0, y:0 };
   var ox = offset.x;
@@ -76,7 +83,7 @@ line.lineStyle(1, 0xFF00FF, 1);
 //   //                            Math.floor(colour.blue));
 
   line.filters = [
-       new PIXI.filters.GlowFilter({ distance: 10, outerStrength: 2 })
+       new PIXI.filters.GlowFilter({ distance: 5, outerStrength: 2 })
    ];
 
   app.addChild(line);
