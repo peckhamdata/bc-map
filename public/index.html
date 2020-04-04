@@ -3,6 +3,10 @@
         body {
             text-align: center;
         }
+        * {
+        margin: 0;
+        padding: 0;
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.js"></script>
@@ -10,6 +14,8 @@
     <script src="map.js"></script>
     <script src="bezier.js"></script>
     <script src="viewport.js"></script>
+    <script src="city_data.js"></script>
+
 </head>
 
 <body>
@@ -37,31 +43,102 @@
                                     Math.floor(colour_2.green), 
                                     Math.floor(colour_2.blue));
  
-        fetch("city.json")
-          .then(response => response.json())
-          .then(json => {
-            console.log('loaded')
-            draw(json)
+        // fetch("city.json")
+        //   .then(response => response.json())
+        //   .then(json => {
+        //     console.log('loaded')
+            draw(city_data)
+            var spiral_lines = [{x:512, y:512}]
+            var spiral_points = []
+            for (var i=0; i< 360; i++) {
+              var angle = 0.1 * i;
+              var x=(1+angle)*Math.cos(angle);
+              var y=(1+angle)*Math.sin(angle);
+              var prev = spiral_lines.length - 1
+              spiral_lines.push({x: spiral_lines[prev].x + x, 
+                                 y: spiral_lines[prev].y + y})
+              spiral_points = spiral_points.concat(calcStraightLine(spiral_lines[prev].x,
+                                                                    spiral_lines[prev].y,
+                                                                    spiral_lines[prev+1].x,
+                                                                    spiral_lines[prev+1].y))
+              console.log(i)
+            }
 
-        var curve = new Bezier((1920/2)+512, 40 , 1920/2+255, 1080 ,105, 1080/2);
-        var points = curve.getLUT(1024)
-        var index = 0
-        var z = .002
+            // for (var i=1; i < spiral_lines.length; i++) {
+            //     drawLine(viewport,
+            //              spiral_lines[i-1],
+            //              spiral_lines[i],
+            //              page_offset, colour_int_2)
+            // }
 
-        function myFunction() {
-          // viewport.moveCenter(viewport.center.x+2, viewport.center.y)
-          viewport.moveCenter(points[index].x, points[index].y)
-          viewport.zoomPercent(z)
-          console.log(viewport.scaled, index)
-          index+=1
-          if (index < points.length) {
-            setTimeout(myFunction, 10);
-          }
-        }
+            var index = 0
+            var curve = new Bezier((1920/2)+512, 40 , 1920/2+255, 1080 ,105, 1080/2);
+            var points = curve.getLUT(1024)
 
-        myFunction()
+            var zoom = -0.99 
 
-        });
+            function intro() {
+                viewport.zoomPercent(zoom, true)
+                // viewport.moveCenter(1920*Math.abs(zoom), 1080*Math.abs(zoom))
+                zoom += 0.1
+                console.log(zoom)
+                setTimeout(intro, 10);
+            }
+
+            var z = .002
+
+            // https://stackoverflow.com/questions/4672279/bresenham-algorithm-in-javascript
+
+            function calcStraightLine (x0, y0, x1, y1, fn) {
+              if(!fn) {
+                var arr = [];
+                fn = function(x, y) { arr.push({ x: x, y: y }); };
+              }
+              var dx = x1 - x0;
+              var dy = y1 - y0;
+              var adx = Math.abs(dx);
+              var ady = Math.abs(dy);
+              var eps = 0;
+              var sx = dx > 0 ? 1 : -1;
+              var sy = dy > 0 ? 1 : -1;
+              if(adx > ady) {
+                for(var x = x0, y = y0; sx < 0 ? x >= x1 : x <= x1; x += sx) {
+                  fn(x, y);
+                  eps += ady;
+                  if((eps<<1) >= adx) {
+                    y += sy;
+                    eps -= adx;
+                  }
+                }
+              } else {
+                for(var x = x0, y = y0; sy < 0 ? y >= y1 : y <= y1; y += sy) {
+                  fn(x, y);
+                  eps += adx;
+                  if((eps<<1) >= ady) {
+                    x += sx;
+                    eps -= ady;
+                  }
+                }
+              }
+              return arr;
+            };
+
+            function follow_line(line) {
+              viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
+              if (viewport.scaled < 12) {
+                  viewport.zoomPercent(z, true)
+              }
+              console.log(index, line[index], viewport.scaled)
+              index+=1
+              if (index < line.length) {
+                setTimeout(follow_line.bind(null, line), 1000);
+              }
+            }
+            // intro()
+            viewport.zoomPercent(zoom, true)
+            index = 0
+            follow_line(spiral_points.reverse())
+
 
         function draw(data) { 
             data.forEach(function(street){

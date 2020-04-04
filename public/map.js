@@ -8,15 +8,6 @@ function drawSkeleton(ctx, curve, offset = {x: 0, y: 0}, nocoords) {
   if(!nocoords) drawPoints(ctx, pts, offset);
 }
 
-function drawCircle(ctx, p, r, offset) {
-  offset = offset || { x:0, y:0 };
-  var ox = offset.x;
-  var oy = offset.y;
-  ctx.beginPath();
-  ctx.arc(p.x + ox, p.y + oy, r, 0, 2*Math.PI);
-  ctx.stroke();
-}
-
 function drawCurve(app, curve, offset, colour_int) {
 
   let line = new PIXI.Graphics();
@@ -67,6 +58,7 @@ function rgbToInt(r, g, b) {
 
 // 0xFF00FF
 
+
 function drawLine(app, p1, p2, offset, colour_int) {
 
 let line = new PIXI.Graphics();
@@ -89,7 +81,3 @@ line.lineStyle(1, colour_int, 1);
   app.addChild(line);
 }
 
-function drawPoints(ctx, points, offset) {
-  offset = offset || { x:0, y:0 };
-  points.forEach(p => drawCircle(ctx, p, 3, offset));
-}
