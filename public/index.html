@@ -48,10 +48,11 @@
         //   .then(json => {
         //     console.log('loaded')
             draw(city_data)
+
             var spiral_lines = [{x:512, y:512}]
             var spiral_points = []
-            for (var i=0; i< 360; i++) {
-              var angle = 0.1 * i;
+            for (var i=0; i< 360; i+=1) {
+              var angle = 0.05 * i;
               var x=(1+angle)*Math.cos(angle);
               var y=(1+angle)*Math.sin(angle);
               var prev = spiral_lines.length - 1
@@ -124,21 +125,27 @@
             };
 
             function follow_line(line) {
-              viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
-              if (viewport.scaled < 12) {
+              // viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
+              if (viewport.scaled < 10) {
                   viewport.zoomPercent(z, true)
+                  viewport.children.forEach(function(child){
+                    child.filters[0].outerStrength+=.1;
+                  })
+
               }
               console.log(index, line[index], viewport.scaled)
               index+=1
               if (index < line.length) {
-                setTimeout(follow_line.bind(null, line), 1000);
+                setTimeout(follow_line.bind(null, line), 10);
               }
             }
-            // intro()
+
             viewport.zoomPercent(zoom, true)
             index = 0
             follow_line(spiral_points.reverse())
 
+            console.log(spiral_points.length)
+            viewport.zoomPercent(z * 2000, true)
 
         function draw(data) { 
             data.forEach(function(street){

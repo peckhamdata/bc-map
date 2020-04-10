@@ -35,9 +35,8 @@ function drawCurve(app, curve, offset, colour_int) {
   }
 
   line.filters = [
-       new PIXI.filters.GlowFilter({ distance: 15, outerStrength: 2 })
+       new PIXI.filters.GlowFilter({ distance: 15, outerStrength: 2, color: 0x93fdff })
    ];
-
   // ctx.strokeStyle = "red";
   app.addChild(line);
 
@@ -75,8 +74,9 @@ line.lineStyle(1, colour_int, 1);
 //   //                            Math.floor(colour.blue));
 
   line.filters = [
-       new PIXI.filters.GlowFilter({ distance: 5, outerStrength: 2 })
+       new PIXI.filters.GlowFilter({ distance: 15, outerStrength: 2, color: 0xffd6a2 })
    ];
+
 
   app.addChild(line);
 }
