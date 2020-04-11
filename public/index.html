@@ -125,7 +125,7 @@
             };
 
             function follow_line(line) {
-              // viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
+              viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
               if (viewport.scaled < 10) {
                   viewport.zoomPercent(z, true)
                   viewport.children.forEach(function(child){
