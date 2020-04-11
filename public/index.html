@@ -129,11 +129,11 @@
               if (viewport.scaled < 10) {
                   viewport.zoomPercent(z, true)
                   viewport.children.forEach(function(child){
-                    child.filters[0].outerStrength+=.1;
+                    child.filters[0].outerStrength+=.001;
                   })
 
               }
-              console.log(index, line[index], viewport.scaled)
+              console.log(index, line[index], viewport.scaled, viewport.children[0].filters[0].outerStrength)
               index+=1
               if (index < line.length) {
                 setTimeout(follow_line.bind(null, line), 10);
