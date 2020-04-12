@@ -140,12 +140,23 @@
               }
             }
 
+            function goto_line(line, n) {
+              viewport.moveCenter(line[n].x+page_offset.x, line[n].y+page_offset.y)
+              if (viewport.scaled < 10) {
+                  viewport.setZoom(z * n, true)
+                  viewport.children.forEach(function(child){
+                    child.filters[0].outerStrength+=(.001 * n);
+                  })
+              console.log(index, line[index], viewport.scaled, viewport.children[0].filters[0].outerStrength)
+              }
+            }
+
             viewport.zoomPercent(zoom, true)
-            index = 0
-            follow_line(spiral_points.reverse())
+            index = spiral_points.length-1000
+            goto_line(spiral_points.reverse(), index)
+            follow_line(spiral_points, index)
 
             console.log(spiral_points.length)
-            viewport.zoomPercent(z * 2000, true)
 
         function draw(data) { 
             data.forEach(function(street){
