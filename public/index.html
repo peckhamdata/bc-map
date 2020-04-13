@@ -137,6 +137,8 @@
               index+=1
               if (index < line.length) {
                 setTimeout(follow_line.bind(null, line), 10);
+              } else {
+                setTimeout(final_zoom.bind(null, 100), 10);
               }
             }
 
@@ -151,12 +153,19 @@
               }
             }
 
+            function final_zoom(n) {
+              console.log(n)
+              viewport.zoomPercent(z, true)
+              n-=1
+              if (n > 0) {
+                setTimeout(final_zoom.bind(null, n), 10);
+              }
+            }
+
             viewport.zoomPercent(zoom, true)
-            index = spiral_points.length-1000
+            index = spiral_points.length-1
             goto_line(spiral_points.reverse(), index)
             follow_line(spiral_points, index)
-
-            console.log(spiral_points.length)
 
         function draw(data) { 
             data.forEach(function(street){
