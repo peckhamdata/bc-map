@@ -124,16 +124,18 @@
               return arr;
             };
 
+            var zz = .25;
+
             function follow_line(line) {
               viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
-              if (viewport.scaled < 10) {
-                  viewport.zoomPercent(z, true)
+              // if (viewport.scaled < 10) {
+                  viewport.zoomPercent(z * zz, true)
                   viewport.children.forEach(function(child){
                     child.filters[0].outerStrength+=.001;
                   })
-
-              }
-              console.log(index, line[index], viewport.scaled, viewport.children[0].filters[0].outerStrength)
+                zz++
+              // }
+              console.log(index, line[index], line.length, viewport.scaled, viewport.children[0].filters[0].outerStrength)
               index+=1
               if (index < line.length) {
                 setTimeout(follow_line.bind(null, line), 10);
@@ -154,7 +156,6 @@
             }
 
             function final_zoom(n) {
-              console.log(n)
               viewport.zoomPercent(z, true)
               n-=1
               if (n > 0) {
@@ -164,6 +165,7 @@
 
             viewport.zoomPercent(zoom, true)
             index = spiral_points.length-1
+            index = index - 75
             goto_line(spiral_points.reverse(), index)
             follow_line(spiral_points, index)
 
