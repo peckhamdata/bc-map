@@ -138,10 +138,8 @@
               console.log(index, line[index], line.length, viewport.scaled, viewport.children[0].filters[0].outerStrength)
               index+=1
               if (index < line.length) {
-                setTimeout(follow_line.bind(null, line), 10);
-              } else {
-                setTimeout(final_zoom.bind(null, 500), 10);
-              }
+                setTimeout(follow_line.bind(null, line), 1000);
+              } 
             }
 
             function goto_line(line, n) {
