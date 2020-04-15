@@ -124,10 +124,16 @@
               return arr;
             };
 
+            var backup = true;
+
             function follow_line(line) {
               viewport.moveCenter(line[index].x+page_offset.x, line[index].y+page_offset.y)
               if (viewport.scaled < 10) {
-                  viewport.zoomPercent(z, true)
+                  if (backup == true) {
+                    viewport.zoomPercent(-z, true)
+                  } else {
+                    viewport.zoomPercent(z, true)
+                  }
                   viewport.children.forEach(function(child){
                     child.filters[0].outerStrength+=.001;
                   })
@@ -136,6 +142,10 @@
               console.log(index, line[index], viewport.scaled, viewport.children[0].filters[0].outerStrength)
               index+=1
               if (index < line.length) {
+                setTimeout(follow_line.bind(null, line), 10);
+              } else {
+                backup = false
+                index = 0
                 setTimeout(follow_line.bind(null, line), 10);
               }
             }
