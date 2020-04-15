@@ -145,13 +145,13 @@
 
             function goto_line(line, n) {
               viewport.moveCenter(line[n].x+page_offset.x, line[n].y+page_offset.y)
-              if (viewport.scaled < 10) {
+              // if (viewport.scaled < 10) {
                   viewport.setZoom(z * n, true)
                   viewport.children.forEach(function(child){
                     child.filters[0].outerStrength+=(.001 * n);
                   })
               console.log(index, line[index], viewport.scaled, viewport.children[0].filters[0].outerStrength)
-              }
+              // }
             }
 
             viewport.setZoom(10, true)
