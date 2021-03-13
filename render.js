@@ -8,7 +8,9 @@ const seed = 1024
 const num_curves = 64
 const city_builder = new CityBuilder(seed, num_curves);
 var plotter = new hp.JimpPlotter('./demo.png', seed, seed);
-var colour = {red: 0, green: 100, blue: 0} 
+
+var colour = {red: 0, green: 255, blue: 255}
+var colour_2 = {red: 255, green: 140, blue: 0}
 
 city_builder.build_bezier_streets();
 city_builder.build_diagonal_streets();
@@ -18,7 +20,7 @@ city_builder.add_junctions();
 plotter.init(function() {
   city_builder.bezier_streets.forEach(street => {
     plotter.plot_points(street.geometry.getLUT(city_builder.curve_num_points), colour)
-    render_junctions(street, {red: 255, green: 255, blue: 0} )
+    render_junctions(street, colour_2 )
   });
   city_builder.diagonal_streets.forEach(street => {
     var points = bresenham(street.geometry.start.x,
@@ -27,7 +29,7 @@ plotter.init(function() {
                            street.geometry.end.y)
 
     plotter.plot_points(points, colour)
-    render_junctions(street, {red: 0, green: 0, blue: 255} )
+    render_junctions(street, colour_2 )
   });
   city_builder.cross_streets.forEach(street => {
     var points = bresenham(street.geometry.start.x,
@@ -36,7 +38,7 @@ plotter.init(function() {
                            street.geometry.end.y)
 
     plotter.plot_points(points, colour)
-    render_junctions(street, {red: 255, green: 0, blue: 0} )
+    render_junctions(street, colour_2 )
   });
 
   plotter.write();

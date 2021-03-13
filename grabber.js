@@ -5,14 +5,14 @@ let _page;
 
 async function please_wait() {
   console.log('you wait')
-  let myFirstPromise = new Promise((resolve, reject) => {
+  let timer = new Promise((resolve, reject) => {
     setTimeout( function() {
       console.log('time passes');   
       resolve("Success!") 
     }, 1000) 
   }) 
 
-  return myFirstPromise
+  return timer
 }
 
 async function run() {

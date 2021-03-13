@@ -6,6 +6,7 @@
   "dependencies": {
     "bezier-js": "^2.5.1",
     "bresenham": "^0.0.4",
+    "harry-plotter": "0.0.2",
     "pixi-viewport": "^4.10.0",
     "pixi.js": "^5.2.1",
     "selenium-webdriver": "^4.0.0-alpha.7"
