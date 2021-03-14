@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>three dee citee</title>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+        <script src="city_data.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+    </head>
+   <body>
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+    <script>
+
+        function draw(data) {
+            data.forEach(function(street){
+                if (street.type == "bezier") {
+                    var street_curve = new Bezier(street.geometry.start.x,
+                                                  street.geometry.start.y,
+                                                  street.geometry.control.x,
+                                                  street.geometry.control.y,
+                                                  street.geometry.end.x,
+                                                  street.geometry.end.y)
+
+                    drawCurve(viewport, street_curve, page_offset, colour_int)
+                } else {
+                    drawLine(viewport, {x:street.geometry.start.x,
+                                   y:street.geometry.start.y},
+                                  {x:street.geometry.end.x,
+                                   y:street.geometry.end.y}, page_offset, colour_int_2);
+                }
+                // street.junctions.forEach(function(junction){
+                //     drawPoints(ctx,  , page_offset)
+                // });
+            })
+        }
+
+        var createScene = function () {
+          var scene = new BABYLON.Scene(engine);
+          scene.clearColor = new BABYLON.Color3(0, 0, 0);
+
+          // camera
+          var camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 0, -0), scene);
+          camera.setPosition(new BABYLON.Vector3(-10, -10, -100));
+          camera.attachControl(canvas, true);
+
+
+          // CURVE3 : Bezier Quadratic Curve
+
+          city_data.forEach(function(street){
+            if (street.type === "bezier") {
+            var quadraticBezierVectors = BABYLON.Curve3.CreateQuadraticBezier(
+              new BABYLON.Vector3(street.geometry.start.x, street.geometry.start.y, 0),
+              new BABYLON.Vector3(street.geometry.control.x, street.geometry.control.y, 0),
+              new BABYLON.Vector3(street.geometry.end.x, street.geometry.end.y, 0),
+              25);
+            var quadraticBezierCurve = BABYLON.Mesh.CreateLines("qbezier", quadraticBezierVectors.getPoints(), scene);
+            quadraticBezierCurve.color = new BABYLON.Color3(0, 255, 255);
+           }
+          })
+
+          return scene;
+        }
+
+        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+        // Add your code here matching the playground format
+        const scene = createScene(); //Call the createScene function
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+    </script>
+   </body>
+</html>

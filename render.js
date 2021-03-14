@@ -1,6 +1,8 @@
 const hp = require("harry-plotter");
 const bresenham = require("bresenham");
 const CityBuilder = require('./src/city_builder.js')
+const Bezier = require('bezier-js');
+
 const fs = require('fs');
 
 
@@ -19,7 +21,15 @@ city_builder.add_junctions();
 
 plotter.init(function() {
   city_builder.bezier_streets.forEach(street => {
-    plotter.plot_points(street.geometry.getLUT(city_builder.curve_num_points), colour)
+    var street_curve = new Bezier(street.geometry.start.x,
+                                  street.geometry.start.y,
+                                  street.geometry.control.x,
+                                  street.geometry.control.y,
+                                  street.geometry.end.x,
+                                  street.geometry.end.y)
+    var points = street_curve.getLUT(this.curve_num_points)
+
+    plotter.plot_points(points, colour)
     render_junctions(street, colour_2 )
   });
   city_builder.diagonal_streets.forEach(street => {
@@ -56,7 +66,14 @@ function render_junctions(street, colour) {
     // Render junctions
     var points
     if (street.type === 'bezier') {
-      points = street.geometry.getLUT(city_builder.curve_num_points)
+      var street_curve = new Bezier(street.geometry.start.x,
+                                    street.geometry.start.y,
+                                    street.geometry.control.x,
+                                    street.geometry.control.y,
+                                    street.geometry.end.x,
+                                    street.geometry.end.y)
+
+      points = street_curve.getLUT(city_builder.curve_num_points)
     } else {
       points = bresenham(street.geometry.start.x,
                          street.geometry.start.y,

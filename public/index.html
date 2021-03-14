@@ -154,7 +154,7 @@
               // }
             }
 
-            viewport.setZoom(10, true)
+            viewport.setZoom(1, true)
             index = spiral_points.length-1
             index = index - 100
             goto_line(spiral_points.reverse(), index)
@@ -163,7 +163,14 @@
         function draw(data) { 
             data.forEach(function(street){
                 if (street.type == "bezier") {
-                    drawCurve(viewport, street.geometry, page_offset, colour_int)
+                    var street_curve = new Bezier(street.geometry.start.x,
+                                                  street.geometry.start.y,
+                                                  street.geometry.control.x,
+                                                  street.geometry.control.y,
+                                                  street.geometry.end.x,
+                                                  street.geometry.end.y)
+
+                    drawCurve(viewport, street_curve, page_offset, colour_int)
                 } else {
                     drawLine(viewport, {x:street.geometry.start.x,
                                    y:street.geometry.start.y},
