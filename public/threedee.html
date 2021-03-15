@@ -26,54 +26,80 @@
     <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
     <script>
 
-        function draw(data) {
-            data.forEach(function(street){
-                if (street.type == "bezier") {
-                    var street_curve = new Bezier(street.geometry.start.x,
-                                                  street.geometry.start.y,
-                                                  street.geometry.control.x,
-                                                  street.geometry.control.y,
-                                                  street.geometry.end.x,
-                                                  street.geometry.end.y)
 
-                    drawCurve(viewport, street_curve, page_offset, colour_int)
-                } else {
-                    drawLine(viewport, {x:street.geometry.start.x,
-                                   y:street.geometry.start.y},
-                                  {x:street.geometry.end.x,
-                                   y:street.geometry.end.y}, page_offset, colour_int_2);
-                }
-                // street.junctions.forEach(function(junction){
-                //     drawPoints(ctx,  , page_offset)
-                // });
-            })
-        }
 
         var createScene = function () {
           var scene = new BABYLON.Scene(engine);
           scene.clearColor = new BABYLON.Color3(0, 0, 0);
 
           // camera
-          var camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 0, -0), scene);
-          camera.setPosition(new BABYLON.Vector3(-10, -10, -100));
+          const scale = 10000
+          const offset = 0
+          var camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+          camera.setPosition(new BABYLON.Vector3(-2417, -765746, -348618));
+
           camera.attachControl(canvas, true);
+          camera.maxZ = 10000000;
+          camera.minZ = -10000000;
 
+          const myPoints = [
+                new BABYLON.Vector3(-100, -200, 0),
+                new BABYLON.Vector3(-1000, -1000, 0),
+                new BABYLON.Vector3(10000, 1000, 0)
+          ]
+          const lines = BABYLON.MeshBuilder.CreateLines("lines", {points: myPoints});
 
-          // CURVE3 : Bezier Quadratic Curve
-
+          const halfway = 512
           city_data.forEach(function(street){
             if (street.type === "bezier") {
-            var quadraticBezierVectors = BABYLON.Curve3.CreateQuadraticBezier(
-              new BABYLON.Vector3(street.geometry.start.x, street.geometry.start.y, 0),
-              new BABYLON.Vector3(street.geometry.control.x, street.geometry.control.y, 0),
-              new BABYLON.Vector3(street.geometry.end.x, street.geometry.end.y, 0),
-              25);
-            var quadraticBezierCurve = BABYLON.Mesh.CreateLines("qbezier", quadraticBezierVectors.getPoints(), scene);
-            quadraticBezierCurve.color = new BABYLON.Color3(0, 255, 255);
-           }
-          })
+              console.log(street.geometry.start.x * scale, street.geometry.start.y * scale)
+              console.log(street.geometry.end.x * scale, street.geometry.end.y * scale)
+              var quadraticBezierVectors = BABYLON.Curve3.CreateQuadraticBezier(
+                new BABYLON.Vector3((street.geometry.start.x - halfway) * scale,
+                                    (street.geometry.start.y - halfway) * scale, 0),
+                new BABYLON.Vector3((street.geometry.control.x - halfway) * scale,
+                                    (street.geometry.control.y - halfway) * scale, 0),
+                new BABYLON.Vector3((street.geometry.end.x - halfway) * scale,
+                                    (street.geometry.end.y - halfway) * scale, 0),
+                25);
+              var quadraticBezierCurve = BABYLON.Mesh.CreateLines("qbezier", quadraticBezierVectors.getPoints(), scene);
+                quadraticBezierCurve.color = new BABYLON.Color3(0, 255, 255);
+            }
+            if (street.type === "bresenham") {
+              console.log(street.id)
+              const myPoints = [
+                new BABYLON.Vector3((street.geometry.start.x - halfway) * scale, (street.geometry.start.y - halfway) * scale, 0),
+                new BABYLON.Vector3((street.geometry.end.x - halfway) * scale, (street.geometry.end.y - halfway) * scale, 0)
+              ]
+              const line_colors = [new BABYLON.Color4(1, 0.68, 0, 1),
+                                   new BABYLON.Color4(1, 0.68, 0, 1)]
 
-          return scene;
+              const lines = BABYLON.MeshBuilder.CreateLines("lines", {points: myPoints, colors: line_colors});
+            }
+          })
+            doDownload('scene', scene);
+   	        return scene;
+        };
+
+        var objectUrl;
+        function doDownload(filename, scene) {
+          if (objectUrl) {
+            window.URL.revokeObjectURL(objectUrl);
+          }
+          var serializedScene = BABYLON.SceneSerializer.Serialize(scene);
+          var strScene = JSON.stringify(serializedScene);
+          if (filename.toLowerCase().lastIndexOf(".babylon") !== filename.length - 8 || filename.length < 9) {
+            filename += ".babylon";
+          }
+          var blob = new Blob([strScene], { type: "octet/stream" });
+          // turn blob into an object URL; saved as a member, so can be cleaned out later
+          objectUrl = (window.webkitURL || window.URL).createObjectURL(blob);
+          var link = window.document.createElement("a");
+          link.href = objectUrl;
+          link.download = filename;
+          var click = document.createEvent("MouseEvents");
+          click.initEvent("click", true, false);
+          link.dispatchEvent(click);
         }
 
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
@@ -88,6 +114,31 @@
         window.addEventListener("resize", function () {
                 engine.resize();
         });
+
+        var zoom = 0;
+
+        function intro() {
+          zoom += 1
+          var new_pos = new BABYLON.Vector3(scene.cameras[0].position.x,
+            scene.cameras[0].position.y,
+            scene.cameras[0].position.z + 1000)
+          scene.cameras[0].position = new_pos
+          console.log(scene.cameras[0].position)
+          if (zoom < 100000) {
+            setTimeout(intro, 1);
+          }
+        }
+
+        function zoom_in(x, y, z) {
+          var new_pos = new BABYLON.Vector3(scene.cameras[0].position.x + x,
+                                            scene.cameras[0].position.y + y,
+                                            scene.cameras[0].position.z + z)
+          scene.cameras[0].position = new_pos
+          console.log(scene.cameras[0].position)
+        }
+
+        // intro();
+
     </script>
    </body>
 </html>
