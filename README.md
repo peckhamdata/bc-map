@@ -1,6 +1,6 @@
 # bc-map
 
-![Bezier City](demo.png)
+![Bezier City](map.png)
 
 Creates the Bezier City Map.
 

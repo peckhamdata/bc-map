@@ -2,8 +2,9 @@ const Bezier = require('bezier-js');
 const bresenham = require("bresenham");
 
 module.exports = class CityBuilder {
-  constructor(seed, num_curves) {
+  constructor(seed, num_curves, scale) {
     this.seed = seed
+    this.scale = scale
     this.magic = this.seed / 2
     this.num_curves = num_curves
     this.next_street = -1;
@@ -40,6 +41,7 @@ module.exports = class CityBuilder {
   }
 
   circle(radius) {
+    var offset = (this.seed / 2) * this.scale
     var pointAngleInRadians = 0;
     var points = [];
     for (pointAngleInRadians = 0; 
@@ -47,7 +49,7 @@ module.exports = class CityBuilder {
          pointAngleInRadians+=(Math.PI/360)) {
       var x = Math.cos(pointAngleInRadians) * radius;
       var y = Math.sin(pointAngleInRadians) * radius;
-      points.push({x: x + (this.seed / 2), y: y + (this.seed / 2)})
+      points.push({x: x + offset, y: y + offset})
     }
     return points
   }
@@ -59,8 +61,8 @@ module.exports = class CityBuilder {
 
   build_bezier_streets() {
 
-    var circle_points = this.circle(this.seed / 2)
-    var inner_circle = this.circle((this.seed / 2) - 128) // #MAGIC
+    var circle_points = this.circle((this.seed / 2) * this.scale)
+    var inner_circle = this.circle((this.seed / 2 - 128) * this.scale) // #MAGIC
     var circle_offset = Math.floor(circle_points.length / 8) // #MAGIC
     var inner_circle_length = inner_circle.length
     circle_points.push(...circle_points)
@@ -82,7 +84,7 @@ module.exports = class CityBuilder {
                              y: inner_circle[there].y},
                    end:     {x: circle_points[here+circle_offset].x,
                              y: circle_points[here+circle_offset].y}};
-
+      console.log('adding bezier street ' + i + ' of ' + this.num_curves);
       this.bezier_streets.push({id: this.street_id(),
                                 type: 'bezier',
                                 geometry: curve,
@@ -120,6 +122,7 @@ module.exports = class CityBuilder {
                                          y: curve_points[k].y},
                                  end:   {x: prev_curve_points[k+offset].x,
                                          y: prev_curve_points[k+offset].y}}}
+        console.log('adding diagonal street:' + i + '/' + this.num_curves + ':' + j + '/' + this.curve_num_points)
         this.diagonal_streets.push(street)
         
         lines.push(street)
@@ -145,6 +148,7 @@ module.exports = class CityBuilder {
                                        y: col[l].geometry.start.y}}}
        col_p[l].junctions.push({id: street.id, address: 0})
        col[l].junctions.push({id: street.id, address: 0})
+       console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
        this.cross_streets.push(street)
       }
       var final = col_p[l-1].length
@@ -214,7 +218,8 @@ module.exports = class CityBuilder {
               return value_i.includes(e);
             });
             result.forEach(function(point) {
-              try { 
+              try {
+                console.log('adding junction to street:' + key);
                 street[0].junctions.push({id: key_i, address:value.indexOf(point)})
                 this_street[0].junctions.push({id: key, address:value_i.indexOf(point)})
               }

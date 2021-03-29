@@ -7,9 +7,10 @@ const fs = require('fs');
 
 
 const seed = 1024
+const scale = 1
 const num_curves = 64
-const city_builder = new CityBuilder(seed, num_curves);
-var plotter = new hp.JimpPlotter('./demo.png', seed, seed);
+const city_builder = new CityBuilder(seed, num_curves, scale);
+var plotter = new hp.JimpPlotter('./map.png', seed * scale, seed * scale);
 
 var colour = {red: 0, green: 255, blue: 255}
 var colour_2 = {red: 255, green: 140, blue: 0}
@@ -27,8 +28,8 @@ plotter.init(function() {
                                   street.geometry.control.y,
                                   street.geometry.end.x,
                                   street.geometry.end.y)
-    var points = street_curve.getLUT(this.curve_num_points)
-
+    var points = street_curve.getLUT(this.curve_num_points * (scale * 10))
+    console.log('rendering bezier street ' + street.id + ' of ' + city_builder.bezier_streets.length)
     plotter.plot_points(points, colour)
     render_junctions(street, colour_2 )
   });
