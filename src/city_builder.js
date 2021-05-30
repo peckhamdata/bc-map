@@ -1,6 +1,39 @@
 const Bezier = require('bezier-js');
 const bresenham = require("bresenham");
 
+// line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
+// Determine the intersection point of two line segments
+// Return FALSE if the lines don't intersect
+
+function intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+
+    // Check if none of the lines are of length 0
+    if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+        return false
+    }
+
+    denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+
+    // Lines are parallel
+    if (denominator === 0) {
+        return false
+    }
+
+    let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
+    let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+
+    // is the intersection along the segments
+    if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+        return false
+    }
+
+    // Return a object with the x and y coordinates of the intersection
+    let x = x1 + ua * (x2 - x1)
+    let y = y1 + ua * (y2 - y1)
+
+    return {x, y}
+}
+
 module.exports = class CityBuilder {
   constructor(seed, num_curves, scale) {
     this.seed = seed
@@ -10,7 +43,7 @@ module.exports = class CityBuilder {
     this.next_street = -1;
     this.curve_num_points = this.seed
 
-    this.bezier_sequence = this.lcg_sequence(this.magic, 
+    this.bezier_sequence = this.lcg_sequence(this.magic,
                                              this.magic,
                                              0,
                                              this.magic).
@@ -33,7 +66,7 @@ module.exports = class CityBuilder {
       for (i=0; i < length; i++) {
           seed = (seed * 9301 + 49297) % 233280;
           var rnd = seed / 233280;
-       
+
           result.push(min + rnd * (max - min));
           seed++
       }
@@ -44,8 +77,8 @@ module.exports = class CityBuilder {
     var offset = (this.seed / 2) * this.scale
     var pointAngleInRadians = 0;
     var points = [];
-    for (pointAngleInRadians = 0; 
-         pointAngleInRadians <= 7; 
+    for (pointAngleInRadians = 0;
+         pointAngleInRadians <= 7;
          pointAngleInRadians+=(Math.PI/360)) {
       var x = Math.cos(pointAngleInRadians) * radius;
       var y = Math.sin(pointAngleInRadians) * radius;
@@ -116,20 +149,19 @@ module.exports = class CityBuilder {
         var prev_curve_points = prev_curve.getLUT(this.curve_num_points)
         var street = {id: this.street_id(),
                       type: 'bresenham',
-                      junctions: [{id: this.bezier_streets[i].id, address: 0},
-                                  {id: this.bezier_streets[i-1].id, address: -1}],
+                      junctions: [],
                       geometry: {start: {x: curve_points[k].x,
                                          y: curve_points[k].y},
                                  end:   {x: prev_curve_points[k+offset].x,
                                          y: prev_curve_points[k+offset].y}}}
         console.log('adding diagonal street:' + i + '/' + this.num_curves + ':' + j + '/' + this.curve_num_points)
         this.diagonal_streets.push(street)
-        
+
         lines.push(street)
       }
       this.cols.push(lines)
     }
-  }  
+  }
 
   build_cross_streets() {
     var counter = 0;
@@ -140,97 +172,54 @@ module.exports = class CityBuilder {
       for (var l=0; l < col.length; l++) {
        var street = {id: this.street_id(),
                     type: 'bresenham',
-                    junctions: [{id: col_p[l].id, address: 0}, 
-                                {id: col[l].id, address: -1}], 
+                    junctions: [],
                     geometry: {start: {x: col_p[l].geometry.start.x,
                                        y: col_p[l].geometry.start.y},
                                end:   {x: col[l].geometry.start.x,
                                        y: col[l].geometry.start.y}}}
-       col_p[l].junctions.push({id: street.id, address: 0})
-       col[l].junctions.push({id: street.id, address: 0})
        console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
        this.cross_streets.push(street)
       }
       var final = col_p[l-1].length
        var final_street = {id: this.street_id(),
                     type: 'bresenham',
-                    junctions: [{id: col_p[l-1].id, address: 0}, 
-                                {id: col[l-1].id, address: -1}], 
+                    junctions: [],
                     geometry: {start: {x: col_p[l-1].geometry.end.x,
                                        y: col_p[l-1].geometry.end.y},
                                end:   {x: col[l-1].geometry.end.x,
                                        y: col[l-1].geometry.end.y}}}
-       col_p[l-1].junctions.push({id: final_street.id, address: -1})
-       col[l-1].junctions.push({id: final_street.id, address: -1})
        this.cross_streets.push(final_street)
 
     }
-  }   
+  }
 
-  add_junctions() {
 
-    function to_int (point) {
-      return Math.floor(point.x) * 1000 + Math.floor(point.y)
-    }
 
-    var street_points = {}
-    this.bezier_streets.forEach(street => {
-      var street_curve = new Bezier(street.geometry.start.x,
-                                    street.geometry.start.y,
-                                    street.geometry.control.x,
-                                    street.geometry.control.y,
-                                    street.geometry.end.x,
-                                    street.geometry.end.y)
-      var points = street_curve.getLUT(this.curve_num_points)
-      street_points[street.id] = points.map(function(point) {
-        return to_int(point)
-      });
-    })
-    this.diagonal_streets.forEach(street => {
-      var points = bresenham(street.geometry.start.x,
-                             street.geometry.start.y,
-                             street.geometry.end.x,
-                             street.geometry.end.y)
-      street_points[street.id] = points.map(function(point) {
-        return to_int(point)
-      });
-    })
-    this.cross_streets.forEach(street => {
-      var points = bresenham(street.geometry.start.x,
-                             street.geometry.start.y,
-                             street.geometry.end.x,
-                             street.geometry.end.y)
-      street_points[street.id] = points.map(function(point) {
-        return to_int(point)
-      });
-    })
-
-    // Decide where to put this
-    for (const [key, value] of Object.entries(street_points)) {
-
-      var street = this.get_street(key)
-      if (street.length !== 0) {
-        for (const [key_i, value_i] of Object.entries(street_points)) {
-          if (key != key_i) {
-            var this_street = this.get_street(key_i)
-            // No point trying to match with self
-            var result = value.filter(function (e) {
-              return value_i.includes(e);
-            });
-            result.forEach(function(point) {
-              try {
-                console.log('adding junction to street:' + key);
-                street[0].junctions.push({id: key_i, address:value.indexOf(point)})
-                this_street[0].junctions.push({id: key, address:value_i.indexOf(point)})
+  add_junctions(streets_from, streets_to) {
+      let jid = 0;
+      let junctions = []
+      // For each street
+      streets_from.forEach((from_street) => {
+          streets_to.forEach((to_street) => {
+              if (from_street.id !== to_street.id) {
+                  const junction = intersect(from_street.geometry.start.x,
+                      from_street.geometry.start.y,
+                      from_street.geometry.end.x,
+                      from_street.geometry.end.y,
+                      to_street.geometry.start.x,
+                      to_street.geometry.start.y,
+                      to_street.geometry.end.x,
+                      to_street.geometry.end.y);
+                  if (junction !== false) {
+                      junctions.push({id: jid, street_id: from_street.id, x: junction.x, y: junction.y});
+                      jid++;
+                  }
               }
-              catch(err) {
-                console.log(err)
-              }
-            })
-          }
-        }
-      }
-    }
+          })
+      })
+
+      // Does it intersect with any of the other streets?
+      return junctions;
   }
 
   get_street(id) {
@@ -248,6 +237,6 @@ module.exports = class CityBuilder {
         return obj.id == parseInt(id, 0)
       })
     }
-    return street  
+    return street
   }
 }

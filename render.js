@@ -18,29 +18,30 @@ var colour_2 = {red: 255, green: 140, blue: 0}
 city_builder.build_bezier_streets();
 city_builder.build_diagonal_streets();
 city_builder.build_cross_streets();
-city_builder.add_junctions();
+// city_builder.add_junctions();
 
 plotter.init(function() {
-  city_builder.bezier_streets.forEach(street => {
-    var street_curve = new Bezier(street.geometry.start.x,
-                                  street.geometry.start.y,
-                                  street.geometry.control.x,
-                                  street.geometry.control.y,
-                                  street.geometry.end.x,
-                                  street.geometry.end.y)
-    var points = street_curve.getLUT(this.curve_num_points * (scale * 10))
-    console.log('rendering bezier street ' + street.id + ' of ' + city_builder.bezier_streets.length)
-    plotter.plot_points(points, colour)
-    render_junctions(street, colour_2 )
-  });
+  // city_builder.bezier_streets.forEach(street => {
+  //   var street_curve = new Bezier(street.geometry.start.x,
+  //                                 street.geometry.start.y,
+  //                                 street.geometry.control.x,
+  //                                 street.geometry.control.y,
+  //                                 street.geometry.end.x,
+  //                                 street.geometry.end.y)
+  //   var points = street_curve.getLUT(this.curve_num_points * (scale * 10))
+  //   console.log('rendering bezier street ' + street.id + ' of ' + city_builder.bezier_streets.length)
+  //   plotter.plot_points(points, colour)
+  //   render_junctions(street, colour_2 )
+  // });
   city_builder.diagonal_streets.forEach(street => {
     var points = bresenham(street.geometry.start.x,
                            street.geometry.start.y,
                            street.geometry.end.x,
                            street.geometry.end.y)
+    console.log('rendering diagonal street ' + street.id + ' of ' + city_builder.diagonal_streets.length)
 
     plotter.plot_points(points, colour)
-    render_junctions(street, colour_2 )
+    // render_junctions(street, colour_2 )
   });
   city_builder.cross_streets.forEach(street => {
     var points = bresenham(street.geometry.start.x,
@@ -48,8 +49,10 @@ plotter.init(function() {
                            street.geometry.end.x,
                            street.geometry.end.y)
 
+    console.log('rendering cross street ' + street.id + ' of ' + city_builder.cross_streets.length)
+
     plotter.plot_points(points, colour)
-    render_junctions(street, colour_2 )
+    // render_junctions(street, colour_2 )
   });
 
   plotter.write();
