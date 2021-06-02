@@ -62,11 +62,115 @@ describe('City Builder', () => {
                      {id: 3,
                       geometry: {start: {x:0, y:0},
                       end:   {x:2, y:3}}}];
-    const junctions = city_builder.add_junctions(streets, streets);
+    city_builder.streets = streets;
+    city_builder.add_junctions();
 
-    expect(junctions).toEqual([{id: 0, street_id: 1, x:5, y:5},
-                                        {id: 1, street_id: 2, x:5, y:5}])
+    expect(city_builder.streets[0].junctions).toEqual([{street_id: 2, x:5, y:5}]);
 
   })
 
-})
+  it('sorts junctions by distance from the start of the street', () => {
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+
+    var street = {
+      id: 1,
+      geometry: {
+        start: {x: 0, y: 0},
+        end: {x: 100, y: 100}
+      },
+      junctions: [
+        {x: 90, y: 90},
+        {x: 10, y: 10},
+        {x: 60, y: 60},
+        {x: 50, y: 50}
+      ]
+    };
+
+    const expected = [
+      {x: 10, y: 10, distance: 14},
+      {x: 50, y: 50, distance: 70},
+      {x: 60, y: 60, distance: 84},
+      {x: 90, y: 90, distance: 127}
+    ]
+    city_builder.sort_junctions(street);
+    expect(street.junctions).toEqual(expected);
+  })
+
+  it('splits a street into smaller streets', () => {
+
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+
+    const streets = [
+      {
+        id: 1,
+        geometry: {
+          start: {x: 25, y: 0},
+          end: {x: 25, y: 100}
+        }
+      },
+      {
+        id: 2,
+        geometry: {
+          start: {x: 0, y: 25},
+          end: {x: 80, y: 60}
+        }
+      },
+      {
+        id: 3,
+        geometry: {
+          start: {x: 45, y: 0},
+          end: {x: 55, y: 90}
+        }
+      },
+      {
+        id: 4,
+        geometry: {
+          start: {x: 5, y: 35},
+          end: {x: 55, y: 90}
+        }
+      },
+    ];
+
+    city_builder.streets = streets;
+    city_builder.add_parallels(2);
+    city_builder.add_junctions();
+    city_builder.divide_streets();
+
+    const hp = require("harry-plotter");
+    const bresenham = require("bresenham");
+
+    var plotter = new hp.JimpPlotter('./test.png', 256, 256);
+    var colour = {red: 0, green: 255, blue: 255};
+    var colour_2 = {red: 255, green: 140, blue: 0};
+    var colour_3 = {red: 255, green: 0, blue: 0};
+    var colour_4 = {red: 0,   green: 255, blue: 0};
+
+    plotter.init(() => {
+      city_builder.streets.forEach(street => {
+        var points = bresenham(street.edges.minus.geometry.start.x,
+          street.edges.minus.geometry.start.y,
+          street.edges.minus.geometry.end.x,
+          street.edges.minus.geometry.end.y);
+        plotter.plot_points(points, colour);
+        points = bresenham(street.edges.plus.geometry.start.x,
+          street.edges.plus.geometry.start.y,
+          street.edges.plus.geometry.end.x,
+          street.edges.plus.geometry.end.y);
+        plotter.plot_points(points, colour_2);
+        plotter.plot_points(street.junctions, colour_3);
+      });
+      city_builder.lot_edges.forEach(edge => {
+        var points = bresenham(edge.geometry.start.x,
+          edge.geometry.start.y,
+          edge.geometry.end.x,
+          edge.geometry.end.y);
+        plotter.plot_points(points, colour_4);
+      });
+      plotter.write();
+    });
+  });
+});

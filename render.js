@@ -14,6 +14,7 @@ var plotter = new hp.JimpPlotter('./map.png', seed * scale, seed * scale);
 
 var colour = {red: 0, green: 255, blue: 255}
 var colour_2 = {red: 255, green: 140, blue: 0}
+var colour_3 = {red: 255, green: 0, blue: 0}
 
 city_builder.build_bezier_streets();
 city_builder.build_diagonal_streets();
@@ -40,19 +41,34 @@ plotter.init(function() {
                            street.geometry.end.y)
     console.log('rendering diagonal street ' + street.id + ' of ' + city_builder.diagonal_streets.length)
 
-    plotter.plot_points(points, colour)
+    // plotter.plot_points(points, colour)
     // render_junctions(street, colour_2 )
   });
-  city_builder.cross_streets.forEach(street => {
+  // city_builder.cross_streets.forEach(street => {
+  //   var points = bresenham(street.geometry.start.x,
+  //                          street.geometry.start.y,
+  //                          street.geometry.end.x,
+  //                          street.geometry.end.y)
+  //
+  //   console.log('rendering cross street ' + street.id + ' of ' + city_builder.cross_streets.length)
+  //
+  //   plotter.plot_points(points, colour)
+  //   // render_junctions(street, colour_2 )
+
+  // });
+
+  let parallels = city_builder.add_parallels(city_builder.cross_streets,  1);
+  parallels = parallels.concat(city_builder.add_parallels(city_builder.cross_streets,  -1));
+  parallels = parallels.concat(city_builder.add_parallels(city_builder.diagonal_streets,  1));
+  parallels = parallels.concat(city_builder.add_parallels(city_builder.diagonal_streets,  -1));
+  console.log(parallels.length);
+  parallels.forEach((street) => {
     var points = bresenham(street.geometry.start.x,
-                           street.geometry.start.y,
-                           street.geometry.end.x,
-                           street.geometry.end.y)
+        street.geometry.start.y,
+        street.geometry.end.x,
+        street.geometry.end.y);
 
-    console.log('rendering cross street ' + street.id + ' of ' + city_builder.cross_streets.length)
-
-    plotter.plot_points(points, colour)
-    // render_junctions(street, colour_2 )
+    plotter.plot_points(points, colour_2);
   });
 
   plotter.write();

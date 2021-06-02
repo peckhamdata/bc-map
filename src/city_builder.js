@@ -34,6 +34,31 @@ function intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
     return {x, y}
 }
 
+// Draw line parallel to another from https://stackoverflow.com/a/63538916/1064619
+
+function parallel(line, offset = 0) {
+    var [ox, oy] = [0, 0];
+    if (offset) {
+        const [dx, dy] = [line.start.x - line.end.x, line.start.y - line.end.y];
+        const scale = offset / (dx * dx + dy * dy) ** 0.5;
+        [ox, oy] = [-dy * scale, dx * scale];
+    }
+    return ({geometry: {
+             start: {x: ox + line.start.x, y: oy + line.start.y},
+               end: {x: ox + line.end.x, y: oy + line.end.y}}})
+}
+
+// Sort them based on distance from the start of the line:
+// https://stackoverflow.com/a/20916980/1064619
+
+function distance_between(x1, y1, x2, y2) {
+  var a = x1 - x2;
+  var b = y1 - y2;
+
+  var c = Math.sqrt( a*a + b*b );
+  return Math.floor(c);
+}
+
 module.exports = class CityBuilder {
   constructor(seed, num_curves, scale) {
     this.seed = seed
@@ -49,10 +74,11 @@ module.exports = class CityBuilder {
                                              this.magic).
     slice(0, num_curves).sort((a, b) => a - b);
 
-    this.bezier_streets = []
-    this.diagonal_streets = []
-    this.cross_streets = []
-
+    this.bezier_streets = [];
+    this.diagonal_streets = [];
+    this.cross_streets = [];
+    this.streets = [];
+    this.lot_edges = [];
     // Internal
     this.cols = []
   }
@@ -117,7 +143,7 @@ module.exports = class CityBuilder {
                              y: inner_circle[there].y},
                    end:     {x: circle_points[here+circle_offset].x,
                              y: circle_points[here+circle_offset].y}};
-      console.log('adding bezier street ' + i + ' of ' + this.num_curves);
+      // console.log('adding bezier street ' + i + ' of ' + this.num_curves);
       this.bezier_streets.push({id: this.street_id(),
                                 type: 'bezier',
                                 geometry: curve,
@@ -154,7 +180,7 @@ module.exports = class CityBuilder {
                                          y: curve_points[k].y},
                                  end:   {x: prev_curve_points[k+offset].x,
                                          y: prev_curve_points[k+offset].y}}}
-        console.log('adding diagonal street:' + i + '/' + this.num_curves + ':' + j + '/' + this.curve_num_points)
+        // console.log('adding diagonal street:' + i + '/' + this.num_curves + ':' + j + '/' + this.curve_num_points)
         this.diagonal_streets.push(street)
 
         lines.push(street)
@@ -177,7 +203,7 @@ module.exports = class CityBuilder {
                                        y: col_p[l].geometry.start.y},
                                end:   {x: col[l].geometry.start.x,
                                        y: col[l].geometry.start.y}}}
-       console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
+       // console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
        this.cross_streets.push(street)
       }
       var final = col_p[l-1].length
@@ -193,14 +219,20 @@ module.exports = class CityBuilder {
     }
   }
 
+  add_parallels(offset) {
+    this.streets.forEach((street) => {
+      if (street.edges === undefined) {
+        street.edges = {plus: undefined, minus: undefined};
+      }
+      street.edges.plus = parallel(street.geometry, offset);
+      street.edges.minus = parallel(street.geometry, -Math.abs(offset));
+    });
+  }
 
-
-  add_junctions(streets_from, streets_to) {
-      let jid = 0;
-      let junctions = []
+  add_junctions() {
       // For each street
-      streets_from.forEach((from_street) => {
-          streets_to.forEach((to_street) => {
+      this.streets.forEach((from_street) => {
+          this.streets.forEach((to_street) => {
               if (from_street.id !== to_street.id) {
                   const junction = intersect(from_street.geometry.start.x,
                       from_street.geometry.start.y,
@@ -211,32 +243,75 @@ module.exports = class CityBuilder {
                       to_street.geometry.end.x,
                       to_street.geometry.end.y);
                   if (junction !== false) {
-                      junctions.push({id: jid, street_id: from_street.id, x: junction.x, y: junction.y});
-                      jid++;
+                      if (from_street.junctions === undefined) {
+                        from_street.junctions = [];
+                      }
+                      from_street.junctions.push({street_id: to_street.id, x: junction.x, y: junction.y});
                   }
               }
           })
       })
+  }
 
-      // Does it intersect with any of the other streets?
-      return junctions;
+  sort_junctions(street) {
+    street.junctions.forEach((junction) => {
+      junction.distance = distance_between(street.geometry.start.x,
+                                           street.geometry.start.y,
+                                           junction.x, junction.y);
+    })
+    street.junctions.sort((first, second) => {
+      if (first.distance < second.distance) {
+        return -1;
+      }
+      if (first.distance > second.distance) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+  divide_streets() {
+    this.streets.forEach((street) => {
+      this.sort_junctions(street);
+    })
+  }
+
+  add_plot(right_edge, left_edges, right_edges) {
+
+    // for right_edge:
+
+    // find all left edges it intersects with
+
+
+    var a = x1 - x2;
+    var b = y1 - y2;
+
+    var c = Math.sqrt( a*a + b*b );
+
+    // split line
+
+    // find next right edge
+
+    // throw away smallest lines
+
   }
 
   get_street(id) {
     var street;
     street = this.bezier_streets.filter(obj => {
-      return obj.id == parseInt(id, 0)
+      return obj.id === parseInt(id, 0)
     })
     if (street.length === 0) {
       street = this.diagonal_streets.filter(obj => {
-        return obj.id == parseInt(id, 0)
+        return obj.id === parseInt(id, 0)
       })
     }
     if (street.length === 0) {
       street = this.cross_streets.filter(obj => {
-        return obj.id == parseInt(id, 0)
+        return obj.id === parseInt(id, 0)
       })
     }
     return street
   }
 }
+
+
