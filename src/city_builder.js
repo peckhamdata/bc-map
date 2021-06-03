@@ -28,8 +28,8 @@ function intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
     }
 
     // Return a object with the x and y coordinates of the intersection
-    let x = x1 + ua * (x2 - x1)
-    let y = y1 + ua * (y2 - y1)
+    let x = Math.floor(x1 + ua * (x2 - x1));
+    let y = Math.floor(y1 + ua * (y2 - y1));
 
     return {x, y}
 }
@@ -269,10 +269,45 @@ module.exports = class CityBuilder {
       return 0;
     });
   }
+
   divide_streets() {
     this.streets.forEach((street) => {
       this.sort_junctions(street);
+      // position = start
+      // get next junction
+
+      // get ID of street intersecting at junction
+
+      // get co-ords of minus edge intersection
+
+
     })
+
+  }
+
+  intersect_parallels() {
+    const edges = ['minus', 'plus'];
+    edges.forEach((edge) => {
+      this.streets.forEach((from_street) => {
+        from_street.edges[edge].junctions = []
+        this.streets.forEach((to_street) => {
+          if (from_street.id !== to_street.id) {
+            const junction = intersect(from_street.edges[edge].geometry.start.x,
+              from_street.edges[edge].geometry.start.y,
+              from_street.edges[edge].geometry.end.x,
+              from_street.edges[edge].geometry.end.y,
+              to_street.edges[edge].geometry.start.x,
+              to_street.edges[edge].geometry.start.y,
+              to_street.edges[edge].geometry.end.x,
+              to_street.edges[edge].geometry.end.y);
+            if (junction !== false) {
+              from_street.edges[edge].junctions.push({street_id: to_street.id, x: junction.x, y: junction.y});
+            }
+          }
+        });
+        this.sort_junctions(from_street.edges[edge]);
+      });
+    });
   }
 
   add_plot(right_edge, left_edges, right_edges) {

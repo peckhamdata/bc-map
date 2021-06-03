@@ -98,6 +98,51 @@ describe('City Builder', () => {
     expect(street.junctions).toEqual(expected);
   })
 
+  it ('adds intersections with parallels to parallels', () => {
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+
+    const streets = [
+      {
+        id: 1,
+        geometry: {
+          start: {x: 25, y: 0},
+          end: {x: 25, y: 100}
+        }
+      },
+      {
+        id: 2,
+        geometry: {
+          start: {x: 0, y: 25},
+          end: {x: 80, y: 60}
+        }
+      },
+      {
+        id: 3,
+        geometry: {
+          start: {x: 45, y: 0},
+          end: {x: 55, y: 90}
+        }
+      },
+      {
+        id: 4,
+        geometry: {
+          start: {x: 5, y: 35},
+          end: {x: 55, y: 90}
+        }
+      },
+    ];
+
+    city_builder.streets = streets;
+    city_builder.add_parallels(2);
+
+    city_builder.intersect_parallels();
+    const expected = {"minus": {"geometry": {"end": {"x": 23, "y": 100}, "start": {"x": 23, "y": 0}}, "junctions": [{"distance": 37, "street_id": 2, "x": 23, "y": 37}, {"distance": 57, "street_id": 4, "x": 23, "y": 57}]}, "plus": {"geometry": {"end": {"x": 27, "y": 100}, "start": {"x": 27, "y": 0}}, "junctions": [{"distance": 34, "street_id": 2, "x": 27, "y": 34}, {"distance": 56, "street_id": 4, "x": 27, "y": 56}]}}
+    expect(city_builder.streets[0].edges).toEqual(expected)
+
+  })
+
   it('splits a street into smaller streets', () => {
 
     const seed = 1024
