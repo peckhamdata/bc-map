@@ -1,5 +1,4 @@
 const Bezier = require('bezier-js');
-const bresenham = require("bresenham");
 
 // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
 // Determine the intersection point of two line segments
@@ -44,8 +43,8 @@ function parallel(line, offset = 0) {
         [ox, oy] = [-dy * scale, dx * scale];
     }
     return ({geometry: {
-             start: {x: ox + line.start.x, y: oy + line.start.y},
-               end: {x: ox + line.end.x, y: oy + line.end.y}}})
+             start: {x: Math.floor(ox + line.start.x), y: Math.floor(oy + line.start.y)},
+               end: {x: Math.floor(ox + line.end.x), y: Math.floor(oy + line.end.y)}}})
 }
 
 // Sort them based on distance from the start of the line:
@@ -73,7 +72,6 @@ module.exports = class CityBuilder {
                                              0,
                                              this.magic).
     slice(0, num_curves).sort((a, b) => a - b);
-
     this.bezier_streets = [];
     this.diagonal_streets = [];
     this.cross_streets = [];
@@ -181,8 +179,8 @@ module.exports = class CityBuilder {
                                  end:   {x: prev_curve_points[k+offset].x,
                                          y: prev_curve_points[k+offset].y}}}
         // console.log('adding diagonal street:' + i + '/' + this.num_curves + ':' + j + '/' + this.curve_num_points)
+        this.streets.push(street)
         this.diagonal_streets.push(street)
-
         lines.push(street)
       }
       this.cols.push(lines)
@@ -203,7 +201,8 @@ module.exports = class CityBuilder {
                                        y: col_p[l].geometry.start.y},
                                end:   {x: col[l].geometry.start.x,
                                        y: col[l].geometry.start.y}}}
-       // console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
+       console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
+       this.streets.push(street)
        this.cross_streets.push(street)
       }
       var final = col_p[l-1].length
@@ -214,9 +213,24 @@ module.exports = class CityBuilder {
                                        y: col_p[l-1].geometry.end.y},
                                end:   {x: col[l-1].geometry.end.x,
                                        y: col[l-1].geometry.end.y}}}
+       this.streets.push(final_street)
        this.cross_streets.push(final_street)
 
     }
+  }
+
+  flip_y() {
+    this.streets.forEach((street) => {
+      let ox = street.geometry.start.x;
+      let oy = street.geometry.start.y;
+      if (oy > street.geometry.end.y) {
+        street.geometry.start.y = street.geometry.end.y;
+        street.geometry.start.x = street.geometry.end.x;
+
+        street.geometry.end.y = oy;
+        street.geometry.end.x = ox;
+      }
+    });
   }
 
   add_parallels(offset) {
@@ -287,10 +301,30 @@ module.exports = class CityBuilder {
                 to_street.edges[to_edge].geometry.end.x,
                 to_street.edges[to_edge].geometry.end.y);
               if (junction !== false) {
-                from_street.edges[edge].junctions.push({street_id: to_street.id, x: junction.x, y: junction.y, edge: to_edge});
+                from_street.edges[edge].junctions.push({
+                  street_id: to_street.id,
+                  x: junction.x,
+                  y: junction.y,
+                  edge: to_edge
+                });
               }
             }
           });
+        });
+        this.streets.forEach((to_street) => {
+          if (from_street.id !== to_street.id) {
+            const junction = intersect(from_street.edges[edge].geometry.start.x,
+              from_street.edges[edge].geometry.start.y,
+              from_street.edges[edge].geometry.end.x,
+              from_street.edges[edge].geometry.end.y,
+              to_street.geometry.start.x,
+              to_street.geometry.start.y,
+              to_street.geometry.end.x,
+              to_street.geometry.end.y);
+            if (junction !== false) {
+              from_street.edges[edge].junctions.push({street_id: to_street.id, x: junction.x, y: junction.y, edge: 'centre'});
+            }
+          }
         });
         this.sort_junctions(from_street.edges[edge]);
       });
@@ -301,30 +335,72 @@ module.exports = class CityBuilder {
     const edges = ['minus', 'plus'];
     this.streets.forEach((street) => {
       edges.forEach((edge) => {
-        let start = {x: street.edges[edge].geometry.start.x,
-          y: street.edges[edge].geometry.start.y};
-        let end;
-        let split = true;
-        street.edges[edge].junctions.forEach((junction) => {
-
-          if (split) {
-            end = {x: junction.x, y:junction.y};
-            this.lot_edges.push({geometry: {start: start,
-                                            end: end}});
-          } else {
-            start = {x: junction.x, y: junction.y};
+        if (street.edges[edge].junctions.length > 0) {
+          if (street.edges[edge].junctions[0].distance !== 0) {
+            if (edge === 'minus') {
+              this.lot_edges.push({
+                geometry: {
+                  start: {
+                    x: street.edges.minus.geometry.start.x,
+                    y: street.edges.minus.geometry.start.y
+                  },
+                  end: {
+                    x: street.edges.plus.geometry.start.x,
+                    y: street.edges.plus.geometry.start.y
+                  }
+                }
+              });
+            }
           }
-          split = !(split);
+          if (street.edges[edge].junctions[street.edges[edge].junctions.length-1].distance !== 0) {
+            if (edge === 'minus') {
+              this.lot_edges.push({
+                geometry: {
+                  start: {
+                    x: street.edges.minus.geometry.end.x,
+                    y: street.edges.minus.geometry.end.y
+                  },
+                  end: {
+                    x: street.edges.plus.geometry.end.x,
+                    y: street.edges.plus.geometry.end.y
+                  }
+                }
+              });
+            }
+          }
+        }
+
+        let start = {
+          x: street.edges[edge].geometry.start.x,
+          y: street.edges[edge].geometry.start.y
+        };
+        let end = {
+          x: street.edges[edge].geometry.end.x,
+          y: street.edges[edge].geometry.end.y
+        };
+        let state = 'seek_end';
+
+        street.edges[edge].junctions.forEach((junction, idx) => {
+          if (junction.edge === 'centre') {
+            state = 'seek_start';
+          } else {
+            if (state === 'seek_end') {
+              // reached a junction so set end to intersect
+              end = {x: junction.x, y: junction.y};
+              this.lot_edges.push({geometry: {start: start, end: end}});
+            } else {
+              start = {x: junction.x, y: junction.y};
+              state = 'seek_end';
+            }
+          }
         });
-        if (split) {
-          this.lot_edges.push({
-            geometry: {
+        if (state === 'seek_end') {
+          this.lot_edges.push({geometry: {
               start: start,
               end: {
                 x: street.edges[edge].geometry.end.x,
                 y: street.edges[edge].geometry.end.y
-              }
-            }
+              }}
           });
         }
       });
@@ -332,27 +408,54 @@ module.exports = class CityBuilder {
   }
 
   get_street(id) {
-    var street;
-    street = this.bezier_streets.filter(obj => {
+    return this.streets.filter(obj => {
       return obj.id === parseInt(id, 0)
-    })
-    if (street.length === 0) {
-      street = this.diagonal_streets.filter(obj => {
-        return obj.id === parseInt(id, 0)
-      })
-    }
-    if (street.length === 0) {
-      street = this.cross_streets.filter(obj => {
-        return obj.id === parseInt(id, 0)
-      })
-    }
-    if (street.length === 0) {
-      street = this.streets.filter(obj => {
-        return obj.id === parseInt(id, 0)
-      })
-    }
-    return street
+    });
   }
 }
 
 
+// if (split) {
+//   end = {x: junction.x, y: junction.y};
+//   this.lot_edges.push({
+//     geometry: {
+//       start: start,
+//       end: end
+//     }
+//   });
+// } else {
+//   start = {x: junction.x, y: junction.y};
+// }
+// split = !(split);
+// });
+// if (split) {
+//   this.lot_edges.push({
+//     geometry: {
+//       start: start,
+//       end: {
+//         x: street.edges[edge].geometry.end.x,
+//         y: street.edges[edge].geometry.end.y
+//       }
+//     }
+//   });
+
+// let start = {x: street.edges[edge].geometry.start.x,
+//   y: street.edges[edge].geometry.start.y};
+// let end;
+// street.edges[edge].junctions.forEach((junction, idx) => {
+//   if (idx < street.edges[edge].junctions.length -1) {
+//     if (junction.edge !== 'centre') {
+//       if (street.edges[edge].junctions[idx + 1].edge === 'centre') {
+//         // next junction is the intersecting road so split here
+//         end = {x: junction.x, y: junction.y}
+//         this.lot_edges.push({geometry: {start: start, end: end}})
+//       }
+//     } else {
+//       start = {x: junction.x, y: junction.y}
+//     }
+//   } else {
+//     end = {x: street.edges[edge].geometry.end.x,
+//       y: street.edges[edge].geometry.end.y};
+//     this.lot_edges.push({geometry: {start: start, end: end}})
+//   }
+// });

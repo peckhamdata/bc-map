@@ -138,7 +138,7 @@ describe('City Builder', () => {
     city_builder.add_parallels(2);
 
     city_builder.intersect_parallels();
-    const expected = {"plus":{"geometry":{"start":{"x":27,"y":0},"end":{"x":27,"y":100}},"junctions":[{"street_id":2,"x":27,"y":34,"edge":"plus","distance":34},{"street_id":2,"x":27,"y":38,"edge":"minus","distance":38},{"street_id":4,"x":27,"y":56,"edge":"plus","distance":56},{"street_id":4,"x":27,"y":62,"edge":"minus","distance":62}]},"minus":{"geometry":{"start":{"x":23,"y":0},"end":{"x":23,"y":100}},"junctions":[{"street_id":2,"x":23,"y":32,"edge":"plus","distance":32},{"street_id":2,"x":23,"y":37,"edge":"minus","distance":37},{"street_id":4,"x":23,"y":51,"edge":"plus","distance":51},{"street_id":4,"x":23,"y":57,"edge":"minus","distance":57}]}}
+    const expected = {"plus":{"geometry":{"start":{"x":27,"y":0},"end":{"x":27,"y":100}},"junctions":[{"street_id":2,"x":27,"y":34,"edge":"plus","distance":34},{"street_id":2,"x":27,"y":38,"edge":"minus","distance":38},{"street_id":4,"x":27,"y":56,"edge":"plus","distance":56},{"street_id":4,"x":27,"y":62,"edge":"minus","distance":62}]},"minus":{"geometry":{"start":{"x":23,"y":0},"end":{"x":23,"y":100}},"junctions":[{"street_id":2,"x":23,"y":33,"edge":"plus","distance":33},{"street_id":2,"x":23,"y":36,"edge":"minus","distance":36},{"street_id":4,"x":23,"y":51,"edge":"plus","distance":51},{"street_id":4,"x":23,"y":57,"edge":"minus","distance":57}]}}
     expect(city_builder.streets[0].edges).toEqual(expected)
   })
 
@@ -149,6 +149,13 @@ describe('City Builder', () => {
     const city_builder = new CityBuilder(seed, num_curves);
 
     const streets = [
+      {
+        id: 0,
+        geometry: {
+          end: {x: 25, y: 100},
+          start: {x: 0, y: 0}
+        }
+      },
       {
         id: 1,
         geometry: {
@@ -177,6 +184,20 @@ describe('City Builder', () => {
           end: {x: 55, y: 90}
         }
       },
+      {
+        id: 5,
+        geometry: {
+          start: {x: 145, y: 0},
+          end: {x: 155, y: 90}
+        }
+      },
+      {
+        id: 6,
+        geometry: {
+          start: {x: 155, y: 90},
+          end: {x: 55, y: 130}
+        }
+      },
     ];
 
     city_builder.streets = streets;
@@ -184,6 +205,8 @@ describe('City Builder', () => {
     city_builder.add_junctions();
     city_builder.intersect_parallels();
     city_builder.split_streets();
+    console.log(JSON.stringify(city_builder.streets[4]));
+
     const hp = require("harry-plotter");
     const bresenham = require("bresenham");
 
@@ -199,13 +222,12 @@ describe('City Builder', () => {
           street.edges.minus.geometry.start.y,
           street.edges.minus.geometry.end.x,
           street.edges.minus.geometry.end.y);
-        // plotter.plot_points(points, colour);
+        plotter.plot_points(points, colour);
         points = bresenham(street.edges.plus.geometry.start.x,
           street.edges.plus.geometry.start.y,
           street.edges.plus.geometry.end.x,
           street.edges.plus.geometry.end.y);
-        // plotter.plot_points(points, colour_2);
-        plotter.plot_points([{x:0, y:0}], colour_3);
+        plotter.plot_points(points, colour_2);
       });
       city_builder.lot_edges.forEach(edge => {
         var points = bresenham(edge.geometry.start.x,
@@ -218,3 +240,5 @@ describe('City Builder', () => {
     });
   });
 });
+
+// If the first junction is at the start of your street and the end of another street - do nothing.
