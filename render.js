@@ -24,79 +24,48 @@ city_builder.add_parallels(2);
 city_builder.add_junctions();
 city_builder.intersect_parallels();
 city_builder.split_streets();
-
+city_builder.add_lots();
 
 plotter.init(function() {
-  // city_builder.bezier_streets.forEach(street => {
-  //   var street_curve = new Bezier(street.geometry.start.x,
-  //                                 street.geometry.start.y,
-  //                                 street.geometry.control.x,
-  //                                 street.geometry.control.y,
-  //                                 street.geometry.end.x,
-  //                                 street.geometry.end.y)
-  //   var points = street_curve.getLUT(this.curve_num_points * (scale * 10))
-  //   console.log('rendering bezier street ' + street.id + ' of ' + city_builder.bezier_streets.length)
-  //   plotter.plot_points(points, colour)
-  //   render_junctions(street, colour_2 )
-  // });
-  // city_builder.streets.forEach(street => {
+  // city_builder.lot_edges.forEach(street => {
   //   var points = bresenham(street.geometry.start.x,
-  //     street.geometry.start.y,
-  //     street.geometry.end.x,
-  //     street.geometry.end.y)
+  //                          street.geometry.start.y,
+  //                          street.geometry.end.x,
+  //                          street.geometry.end.y)
   //
-  //   plotter.plot_points(points, colour_2)
-  // });
-  city_builder.lot_edges.forEach(street => {
-    var points = bresenham(street.geometry.start.x,
-                           street.geometry.start.y,
-                           street.geometry.end.x,
-                           street.geometry.end.y)
-
-    plotter.plot_points(points, colour)
+  //   plotter.plot_points(points, colour)
     // render_junctions(street, colour_2 )
+  // });
+
+  city_builder.lots.forEach((lot, idx) => {
+    let red = Math.floor(Math.random() * 255);
+    let green = Math.floor(Math.random() * 255);
+    let blue = Math.floor(Math.random() * 255);
+    let colour = {red: red, green: green, blue: blue};
+    console.log('Rendering ' + idx + ' of ' + lots.length);
+    if (lot.length > 2) {
+      lot.forEach((side) => {
+        try {
+          var points = bresenham(side.geometry.start.x,
+            side.geometry.start.y,
+            side.geometry.end.x,
+            side.geometry.end.y);
+          plotter.plot_points(points, colour);
+        } catch (err) {
+          console.log(lot);
+        }
+      });
+    }
   });
 
   plotter.write();
-  var all_streets = [].concat(city_builder.bezier_streets, city_builder.diagonal_streets, city_builder.cross_streets)
-  // var street_data = JSON.stringify(all_streets, null, 2)
+  var street_data = JSON.stringify(city_builder.lot_edges, null, 2)
 
-  // fs.appendFile('city.json', street_data, function (err) {
-  //   if (err) throw err;
-  //   console.log('Saved!');
-  // });
+  fs.writeFile('city.json', street_data, function (err) {
+    if (err) throw err;
+    console.log('Saved!');
+  });
 })
 
 
-function render_junctions(street, colour) {
-    // Render junctions
-    var points
-    if (street.type === 'bezier') {
-      var street_curve = new Bezier(street.geometry.start.x,
-                                    street.geometry.start.y,
-                                    street.geometry.control.x,
-                                    street.geometry.control.y,
-                                    street.geometry.end.x,
-                                    street.geometry.end.y)
 
-      points = street_curve.getLUT(city_builder.curve_num_points)
-    } else {
-      points = bresenham(street.geometry.start.x,
-                         street.geometry.start.y,
-                         street.geometry.end.x,
-                         street.geometry.end.y)
-    }
-
-    street.junctions.forEach(function(junction, x) {
-      var address = junction.address
-      if (address == -1) {
-        address = points.length-1
-      }
-      var point = points[address]
-      if (typeof point !== 'undefined') {
-        plotter.plot_points([point], colour);
-      } else {
-        console.log(street.id, street.type, address, points.length)
-      }
-    })
-}

@@ -77,6 +77,7 @@ module.exports = class CityBuilder {
     this.cross_streets = [];
     this.streets = [];
     this.lot_edges = [];
+    this.lots = [];
     // Internal
     this.cols = []
   }
@@ -201,7 +202,7 @@ module.exports = class CityBuilder {
                                        y: col_p[l].geometry.start.y},
                                end:   {x: col[l].geometry.start.x,
                                        y: col[l].geometry.start.y}}}
-       console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
+       // console.log('adding cross street:' + c + '/' + this.cols.length + ':' + l + '/' + col.length);
        this.streets.push(street)
        this.cross_streets.push(street)
       }
@@ -339,6 +340,7 @@ module.exports = class CityBuilder {
           if (street.edges[edge].junctions[0].distance !== 0) {
             if (edge === 'minus') {
               this.lot_edges.push({
+                id: this.street_id(),
                 geometry: {
                   start: {
                     x: street.edges.minus.geometry.start.x,
@@ -355,6 +357,7 @@ module.exports = class CityBuilder {
           if (street.edges[edge].junctions[street.edges[edge].junctions.length-1].distance !== 0) {
             if (edge === 'minus') {
               this.lot_edges.push({
+                id: this.street_id(),
                 geometry: {
                   start: {
                     x: street.edges.minus.geometry.end.x,
@@ -387,7 +390,8 @@ module.exports = class CityBuilder {
             if (state === 'seek_end') {
               // reached a junction so set end to intersect
               end = {x: junction.x, y: junction.y};
-              this.lot_edges.push({geometry: {start: start, end: end}});
+              this.lot_edges.push({ id: this.street_id(),
+                                    geometry: {start: start, end: end}});
             } else {
               start = {x: junction.x, y: junction.y};
               state = 'seek_end';
@@ -395,22 +399,55 @@ module.exports = class CityBuilder {
           }
         });
         if (state === 'seek_end') {
-          this.lot_edges.push({geometry: {
-              start: start,
-              end: {
-                x: street.edges[edge].geometry.end.x,
-                y: street.edges[edge].geometry.end.y
-              }}
-          });
+          this.lot_edges.push({
+              id: this.street_id(),
+              geometry: {
+                start: start,
+                end: {
+                  x: street.edges[edge].geometry.end.x,
+                  y: street.edges[edge].geometry.end.y
+                }
+              }
+            }
+          );
         }
       });
     });
   }
 
+
+
   get_street(id) {
     return this.streets.filter(obj => {
       return obj.id === parseInt(id, 0)
     });
+  }
+
+  add_lots() {
+    let used_ids = [];
+    let edges = this.lot_edges;
+
+    const get_neighbour = function(from_edge) {
+      used_ids.push(from_edge.id);
+      for (let i=0; i < edges.length; i++) {
+        if (!used_ids.includes(edges[i].id)) {
+          if ((from_edge.geometry.end.x === edges[i].geometry.start.x && from_edge.geometry.end.y === edges[i].geometry.start.y) ||
+              (from_edge.geometry.end.x === edges[i].geometry.end.x && from_edge.geometry.end.y === edges[i].geometry.end.y) ||
+              (from_edge.geometry.start.x === edges[i].geometry.start.x && from_edge.geometry.start.y === edges[i].geometry.start.y) ||
+              (from_edge.geometry.start.x === edges[i].geometry.end.x && from_edge.geometry.start.y === edges[i].geometry.end.y) ){
+            const neighbour = get_neighbour(edges[i]);
+            neighbour.push(from_edge)
+            return neighbour;
+          }
+        }
+      }
+      return [from_edge];
+    }
+
+    this.lot_edges.forEach((edge, idx) => {
+      console.log('Processing ' + idx + ' of ' + this.lot_edges.length);
+      this.lots.push(get_neighbour(edge));
+    })
   }
 }
 
@@ -459,3 +496,12 @@ module.exports = class CityBuilder {
 //     this.lot_edges.push({geometry: {start: start, end: end}})
 //   }
 // });
+
+// if (((from_edge.geometry.start.x === edges[i].geometry.start.x) &&
+//   (from_edge.geometry.start.y === edges[i].geometry.start.y)) ||
+//   ((from_edge.geometry.start.x === edges[i].geometry.end.x) &&
+//     (from_edge.geometry.start.y === edges[i].geometry.end.y)) ||
+//   ((from_edge.geometry.end.x === edges[i].geometry.start.x) &&
+//     (from_edge.geometry.end.y === edges[i].geometry.start.y)) ||
+//   ((from_edge.geometry.end.x === edges[i].geometry.end.x) &&
+//     (from_edge.geometry.end.y === edges[i].geometry.end.y))) {
