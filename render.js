@@ -42,7 +42,7 @@ plotter.init(function() {
     let green = Math.floor(Math.random() * 255);
     let blue = Math.floor(Math.random() * 255);
     let colour = {red: red, green: green, blue: blue};
-    console.log('Rendering ' + idx + ' of ' + lots.length);
+    console.log('Rendering ' + idx + ' of ' + city_builder.lots.length);
     if (lot.length > 2) {
       lot.forEach((side) => {
         try {
@@ -52,7 +52,7 @@ plotter.init(function() {
             side.geometry.end.y);
           plotter.plot_points(points, colour);
         } catch (err) {
-          console.log(lot);
+          console.log(side);
         }
       });
     }
