@@ -59,7 +59,7 @@ plotter.init(function() {
   });
 
   plotter.write();
-  var street_data = JSON.stringify(city_builder.lot_edges, null, 2)
+  var street_data = JSON.stringify(city_builder.lots, null, 2)
 
   fs.writeFile('city.json', street_data, function (err) {
     if (err) throw err;
