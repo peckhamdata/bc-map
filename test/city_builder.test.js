@@ -1,5 +1,29 @@
 const CityBuilder = require("../src/city_builder.js");
 
+const two_streets = [
+      {
+        id: 0,
+        geometry: {
+          end: {x: 25, y: 100},
+          start: {x: 0, y: 0}
+        }
+      },
+      {
+        id: 1,
+        geometry: {
+          start: {x: 25, y: 0},
+          end: {x: 25, y: 100}
+        }
+      },
+      {
+        id: 4,
+        geometry: {
+          start: {x: 5, y: 35},
+          end: {x: 55, y: 90}
+        }
+      },
+]
+
 describe('City Builder', () => {
 
   it('sets up the parameters for the city', () => {
@@ -200,13 +224,14 @@ describe('City Builder', () => {
       },
     ];
 
-    city_builder.streets = streets;
+    city_builder.streets = two_streets;
     city_builder.add_parallels(2);
     city_builder.add_junctions();
     city_builder.intersect_parallels();
     city_builder.split_streets();
 
-
+    // TODO: How are we testing this?
+    expect(city_builder.lot_edges.length).toEqual(8)
   });
 
   it('makes lots from edges', ()=> {
@@ -271,7 +296,6 @@ describe('City Builder', () => {
     city_builder.add_junctions();
     city_builder.intersect_parallels();
     city_builder.split_streets();
-
     city_builder.add_lots();
 
     const hp = require("harry-plotter");
@@ -283,43 +307,41 @@ describe('City Builder', () => {
     var colour_4 = {red: 255,   green: 0, blue: 0};
 
     plotter.init(() => {
-      // city_builder.streets.forEach(street => {
-      //   var points = bresenham(street.edges.minus.geometry.start.x,
-      //     street.edges.minus.geometry.start.y,
-      //     street.edges.minus.geometry.end.x,
-      //     street.edges.minus.geometry.end.y);
-      //   plotter.plot_points(points, colour);
-      //   points = bresenham(street.edges.plus.geometry.start.x,
-      //     street.edges.plus.geometry.start.y,
-      //     street.edges.plus.geometry.end.x,
-      //     street.edges.plus.geometry.end.y);
-      //   plotter.plot_points(points, colour_2);
-      // });
-      // city_builder.lot_edges.forEach(edge => {
-      //   var points = bresenham(edge.geometry.start.x,
-      //     edge.geometry.start.y,
-      //     edge.geometry.end.x,
-      //     edge.geometry.end.y);
-      //   plotter.plot_points(points, colour_4);
-      // });
+       city_builder.streets.forEach(street => {
+         var points = bresenham(street.edges.minus.geometry.start.x,
+           street.edges.minus.geometry.start.y,
+           street.edges.minus.geometry.end.x,
+           street.edges.minus.geometry.end.y);
+          plotter.plot_points(points, colour_3);
+           points = bresenham(street.edges.plus.geometry.start.x,
+           street.edges.plus.geometry.start.y,
+           street.edges.plus.geometry.end.x,
+           street.edges.plus.geometry.end.y);
+          plotter.plot_points(points, colour_2);
+       });
+       city_builder.lot_edges.forEach(edge => {
+         var points = bresenham(edge.geometry.start.x,
+           edge.geometry.start.y,
+           edge.geometry.end.x,
+           edge.geometry.end.y);
+         // plotter.plot_points(points, colour_4);
+       });
       city_builder.lots.forEach((lot, idx) => {
         let red = Math.floor(Math.random() * 255);
         let green = Math.floor(Math.random() * 255);
         let blue = Math.floor(Math.random() * 255);
         let colour = {red: red, green: green, blue: blue};
-        if (lot.length > 2) {
-          lot.forEach((side) => {
-            try {
-              var points = bresenham(side.geometry.start.x,
-                side.geometry.start.y,
-                side.geometry.end.x,
-                side.geometry.end.y);
-              plotter.plot_points(points, colour);
-            } catch (err) {
-              console.log(lot);
-            }
-          });
-        }
+        lot.forEach((side) => {
+          try {
+            var points = bresenham(side.geometry.start.x,
+              side.geometry.start.y,
+              side.geometry.end.x,
+              side.geometry.end.y);
+              plotter.plot_points(points, colour_4);
+          } catch (err) {
+            console.log(lot);
+          }
+        });
       });
       plotter.write();
     });

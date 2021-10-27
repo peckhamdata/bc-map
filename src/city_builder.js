@@ -337,40 +337,41 @@ module.exports = class CityBuilder {
     this.streets.forEach((street) => {
       edges.forEach((edge) => {
         if (street.edges[edge].junctions.length > 0) {
-          if (street.edges[edge].junctions[0].distance !== 0) {
-            if (edge === 'minus') {
-              this.lot_edges.push({
-                id: this.street_id(),
-                geometry: {
-                  start: {
-                    x: street.edges.minus.geometry.start.x,
-                    y: street.edges.minus.geometry.start.y
-                  },
-                  end: {
-                    x: street.edges.plus.geometry.start.x,
-                    y: street.edges.plus.geometry.start.y
-                  }
-                }
-              });
-            }
-          }
-          if (street.edges[edge].junctions[street.edges[edge].junctions.length-1].distance !== 0) {
-            if (edge === 'minus') {
-              this.lot_edges.push({
-                id: this.street_id(),
-                geometry: {
-                  start: {
-                    x: street.edges.minus.geometry.end.x,
-                    y: street.edges.minus.geometry.end.y
-                  },
-                  end: {
-                    x: street.edges.plus.geometry.end.x,
-                    y: street.edges.plus.geometry.end.y
-                  }
-                }
-              });
-            }
-          }
+          // These street ends are interesting but not lot edges		
+          //if (street.edges[edge].junctions[0].distance !== 0) {
+          //  if (edge === 'minus') {
+          //    this.lot_edges.push({
+          //      id: this.street_id(),
+          //      geometry: {
+          //        start: {
+          //          x: street.edges.minus.geometry.start.x,
+          //          y: street.edges.minus.geometry.start.y
+          //        },
+          //        end: {
+          //          x: street.edges.plus.geometry.start.x,
+          //          y: street.edges.plus.geometry.start.y
+          //        }
+          //      }
+          //    });
+          //  }
+          //}
+          //if (street.edges[edge].junctions[street.edges[edge].junctions.length-1].distance !== 0) {
+            //if (edge === 'minus') {
+              //this.lot_edges.push({
+              //  id: this.street_id(),
+              //  geometry: {
+              //    start: {
+              //      x: street.edges.minus.geometry.end.x,
+              //      y: street.edges.minus.geometry.end.y
+              //    },
+              //    end: {
+              //      x: street.edges.plus.geometry.end.x,
+              //      y: street.edges.plus.geometry.end.y
+              //    }
+              //  }
+              //});
+            //}
+          //}
         }
 
         let start = {
@@ -398,7 +399,7 @@ module.exports = class CityBuilder {
             }
           }
         });
-        if (state === 'seek_end') {
+         if (state === 'seek_end') {
           this.lot_edges.push({
               id: this.street_id(),
               geometry: {
@@ -409,8 +410,8 @@ module.exports = class CityBuilder {
                 }
               }
             }
-          );
-        }
+           );
+         }
       });
     });
   }
@@ -431,22 +432,30 @@ module.exports = class CityBuilder {
       used_ids.push(from_edge.id);
       for (let i=0; i < edges.length; i++) {
         if (!used_ids.includes(edges[i].id)) {
-          if ((from_edge.geometry.end.x === edges[i].geometry.start.x && from_edge.geometry.end.y === edges[i].geometry.start.y) ||
-              (from_edge.geometry.end.x === edges[i].geometry.end.x && from_edge.geometry.end.y === edges[i].geometry.end.y) ||
-              (from_edge.geometry.start.x === edges[i].geometry.start.x && from_edge.geometry.start.y === edges[i].geometry.start.y) ||
-              (from_edge.geometry.start.x === edges[i].geometry.end.x && from_edge.geometry.start.y === edges[i].geometry.end.y) ){
-            const neighbour = get_neighbour(edges[i]);
+	  let match = intersect(from_edge.geometry.start.x,
+	                        from_edge.geometry.start.y,
+	                        from_edge.geometry.end.x,
+	                        from_edge.geometry.end.y,
+	                        edges[i].geometry.start.x,
+	                        edges[i].geometry.start.y,
+	                        edges[i].geometry.end.x,
+	                        edges[i].geometry.end.y)  
+          if (match !== false) {
+            let neighbour = get_neighbour(edges[i]);
             neighbour.push(from_edge)
             return neighbour;
-          }
+	  }	    
         }
       }
       return [from_edge];
     }
 
     this.lot_edges.forEach((edge, idx) => {
-      console.log('Processing ' + idx + ' of ' + this.lot_edges.length);
-      this.lots.push(get_neighbour(edge));
+      // console.log('Processing ' + idx + ' of ' + this.lot_edges.length);
+      const neighbours = get_neighbour(edge);	    
+      if (neighbours.length > 1) {
+        this.lots.push(neighbours);
+      }	      
     })
   }
 }
