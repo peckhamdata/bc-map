@@ -234,6 +234,57 @@ describe('City Builder', () => {
     expect(city_builder.lot_edges.length).toEqual(8)
   });
 
+  it('adds a grid of squares to the map', ()=> {
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+
+    const expected = [
+      {x: 0,
+       y: 0,
+       geometry: {
+         start: {x: 0, y: 0},
+	 end:   {x: , y: }      
+       }
+      }	    
+    ]
+
+    city_builder.add_grid();
+    expect(city_builder.grid).toEqual(expected); 	  
+  });
+
+  it('divides edges into squares on the map', ()=> {
+    const seed = 1024
+    const num_curves = 16
+    const city_builder = new CityBuilder(seed, num_curves);
+
+    const streets = [
+      {
+        id: 0,
+        geometry: {
+          end: {x: 50, y: 200},
+          start: {x: 0, y: 0}
+        }
+      },
+      {
+        id: 0,
+        geometry: {
+          end: {x: 200, y: 50},
+          start: {x: 0, y: 100}
+        }
+      }
+    ]
+
+    city_builder.streets = streets;
+    city_builder.add_parallels(2);
+    city_builder.add_junctions();
+    city_builder.intersect_parallels();
+    city_builder.split_streets();
+
+    render(city_builder, 'test_split.png');	  
+  });
+
+
   it('makes lots from edges', ()=> {
     const seed = 1024
     const num_curves = 16
@@ -298,54 +349,59 @@ describe('City Builder', () => {
     city_builder.split_streets();
     city_builder.add_lots();
 
-    const hp = require("harry-plotter");
-    const bresenham = require("bresenham");
-
-    var plotter = new hp.JimpPlotter('./test.png', 256, 256);
-    var colour_2 = {red: 0, green: 255, blue: 0};
-    var colour_3 = {red: 255, green: 0, blue: 0};
-    var colour_4 = {red: 255,   green: 0, blue: 0};
-
-    plotter.init(() => {
-       city_builder.streets.forEach(street => {
-         var points = bresenham(street.edges.minus.geometry.start.x,
-           street.edges.minus.geometry.start.y,
-           street.edges.minus.geometry.end.x,
-           street.edges.minus.geometry.end.y);
-          plotter.plot_points(points, colour_3);
-           points = bresenham(street.edges.plus.geometry.start.x,
-           street.edges.plus.geometry.start.y,
-           street.edges.plus.geometry.end.x,
-           street.edges.plus.geometry.end.y);
-          plotter.plot_points(points, colour_2);
-       });
-       city_builder.lot_edges.forEach(edge => {
-         var points = bresenham(edge.geometry.start.x,
-           edge.geometry.start.y,
-           edge.geometry.end.x,
-           edge.geometry.end.y);
-         // plotter.plot_points(points, colour_4);
-       });
-      city_builder.lots.forEach((lot, idx) => {
-        let red = Math.floor(Math.random() * 255);
-        let green = Math.floor(Math.random() * 255);
-        let blue = Math.floor(Math.random() * 255);
-        let colour = {red: red, green: green, blue: blue};
-        lot.forEach((side) => {
-          try {
-            var points = bresenham(side.geometry.start.x,
-              side.geometry.start.y,
-              side.geometry.end.x,
-              side.geometry.end.y);
-              plotter.plot_points(points, colour_4);
-          } catch (err) {
-            console.log(lot);
-          }
-        });
-      });
-      plotter.write();
-    });
+    render(city_builder, 'test.png');	  
   })
 });
+	  
+
+function render(city_builder, filename) {	
+  const hp = require("harry-plotter");
+  const bresenham = require("bresenham");
+
+  var plotter = new hp.JimpPlotter(filename, 256, 256);
+  var colour_2 = {red: 0, green: 255, blue: 0};
+  var colour_3 = {red: 255, green: 0, blue: 0};
+  var colour_4 = {red: 255,   green: 0, blue: 0};
+
+  plotter.init(() => {
+     city_builder.streets.forEach(street => {
+       var points = bresenham(street.edges.minus.geometry.start.x,
+         street.edges.minus.geometry.start.y,
+         street.edges.minus.geometry.end.x,
+         street.edges.minus.geometry.end.y);
+        plotter.plot_points(points, colour_3);
+         points = bresenham(street.edges.plus.geometry.start.x,
+         street.edges.plus.geometry.start.y,
+         street.edges.plus.geometry.end.x,
+         street.edges.plus.geometry.end.y);
+        plotter.plot_points(points, colour_2);
+     });
+     city_builder.lot_edges.forEach(edge => {
+       var points = bresenham(edge.geometry.start.x,
+         edge.geometry.start.y,
+         edge.geometry.end.x,
+         edge.geometry.end.y);
+       // plotter.plot_points(points, colour_4);
+     });
+    city_builder.lots.forEach((lot, idx) => {
+      let red = Math.floor(Math.random() * 255);
+      let green = Math.floor(Math.random() * 255);
+      let blue = Math.floor(Math.random() * 255);
+      let colour = {red: red, green: green, blue: blue};
+      lot.forEach((side) => {
+        try {
+          var points = bresenham(side.geometry.start.x,
+            side.geometry.start.y,
+            side.geometry.end.x,
+            side.geometry.end.y);
+            plotter.plot_points(points, colour_4);
+        } catch (err) {
+          console.log(lot);
+        }
+      });
+    });
+    plotter.write();
+  });
+}
 
 // If the first junction is at the start of your street and the end of another street - do nothing.

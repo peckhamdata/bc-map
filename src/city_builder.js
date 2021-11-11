@@ -451,7 +451,7 @@ module.exports = class CityBuilder {
     }
 
     this.lot_edges.forEach((edge, idx) => {
-      // console.log('Processing ' + idx + ' of ' + this.lot_edges.length);
+      console.log('Processing ' + idx + ' of ' + this.lot_edges.length);
       const neighbours = get_neighbour(edge);	    
       if (neighbours.length > 1) {
         this.lots.push(neighbours);
@@ -459,58 +459,3 @@ module.exports = class CityBuilder {
     })
   }
 }
-
-
-// if (split) {
-//   end = {x: junction.x, y: junction.y};
-//   this.lot_edges.push({
-//     geometry: {
-//       start: start,
-//       end: end
-//     }
-//   });
-// } else {
-//   start = {x: junction.x, y: junction.y};
-// }
-// split = !(split);
-// });
-// if (split) {
-//   this.lot_edges.push({
-//     geometry: {
-//       start: start,
-//       end: {
-//         x: street.edges[edge].geometry.end.x,
-//         y: street.edges[edge].geometry.end.y
-//       }
-//     }
-//   });
-
-// let start = {x: street.edges[edge].geometry.start.x,
-//   y: street.edges[edge].geometry.start.y};
-// let end;
-// street.edges[edge].junctions.forEach((junction, idx) => {
-//   if (idx < street.edges[edge].junctions.length -1) {
-//     if (junction.edge !== 'centre') {
-//       if (street.edges[edge].junctions[idx + 1].edge === 'centre') {
-//         // next junction is the intersecting road so split here
-//         end = {x: junction.x, y: junction.y}
-//         this.lot_edges.push({geometry: {start: start, end: end}})
-//       }
-//     } else {
-//       start = {x: junction.x, y: junction.y}
-//     }
-//   } else {
-//     end = {x: street.edges[edge].geometry.end.x,
-//       y: street.edges[edge].geometry.end.y};
-//     this.lot_edges.push({geometry: {start: start, end: end}})
-//   }
-// });
-
-// if (((from_edge.geometry.start.x === edges[i].geometry.start.x) &&
-//   (from_edge.geometry.start.y === edges[i].geometry.start.y)) ||
-//   ((from_edge.geometry.start.x === edges[i].geometry.end.x) &&
-//     (from_edge.geometry.start.y === edges[i].geometry.end.y)) ||
-//   ((from_edge.geometry.end.x === edges[i].geometry.start.x) &&
-//     (from_edge.geometry.end.y === edges[i].geometry.start.y)) ||
-//   ((from_edge.geometry.end.x === edges[i].geometry.end.x) &&
-//     (from_edge.geometry.end.y === edges[i].geometry.end.y))) {
