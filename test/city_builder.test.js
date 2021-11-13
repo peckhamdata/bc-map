@@ -231,20 +231,21 @@ describe('City Builder', () => {
     city_builder.split_streets();
 
     // TODO: How are we testing this?
-    expect(city_builder.lot_edges.length).toEqual(8)
+    expect(city_builder.lot_edges.length).toEqual(16)
   });
 
   it('adds a grid of squares to the map', ()=> {
     const seed = 1024
     const num_curves = 16
-    const city_builder = new CityBuilder(seed, num_curves);
+    const scale = 100
+    const city_builder = new CityBuilder(seed, num_curves, scale);
 
     const expected = [
       {x: 0,
        y: 0,
        geometry: {
          start: {x: 0, y: 0},
-	 end:   {x: , y: }      
+      	 end:   {x: 0, y: seed * scale}      
        }
       }	    
     ]
@@ -281,7 +282,12 @@ describe('City Builder', () => {
     city_builder.intersect_parallels();
     city_builder.split_streets();
 
-    render(city_builder, 'test_split.png');	  
+    city_builder.lots_to_squares()
+
+    const expected = [];
+    
+    render_square(city_builder.squares[1,2], 'test.png');	  
+    expect(city_builder.squares).toEqual(expected);
   });
 
 
@@ -349,10 +355,14 @@ describe('City Builder', () => {
     city_builder.split_streets();
     city_builder.add_lots();
 
-    render(city_builder, 'test.png');	  
+    render(city_builder, 'test_split.png');	  
+
   })
 });
 	  
+function render_square(lots, x, y, filename) {
+
+}
 
 function render(city_builder, filename) {	
   const hp = require("harry-plotter");
@@ -376,13 +386,6 @@ function render(city_builder, filename) {
          street.edges.plus.geometry.end.y);
         plotter.plot_points(points, colour_2);
      });
-     city_builder.lot_edges.forEach(edge => {
-       var points = bresenham(edge.geometry.start.x,
-         edge.geometry.start.y,
-         edge.geometry.end.x,
-         edge.geometry.end.y);
-       // plotter.plot_points(points, colour_4);
-     });
     city_builder.lots.forEach((lot, idx) => {
       let red = Math.floor(Math.random() * 255);
       let green = Math.floor(Math.random() * 255);
@@ -396,7 +399,7 @@ function render(city_builder, filename) {
             side.geometry.end.y);
             plotter.plot_points(points, colour_4);
         } catch (err) {
-          console.log(lot);
+          console.log(err, lot);
         }
       });
     });

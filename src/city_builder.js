@@ -78,6 +78,8 @@ module.exports = class CityBuilder {
     this.streets = [];
     this.lot_edges = [];
     this.lots = [];
+    this.grid = [];
+    this.squares = [[]];
     // Internal
     this.cols = []
   }
@@ -451,11 +453,18 @@ module.exports = class CityBuilder {
     }
 
     this.lot_edges.forEach((edge, idx) => {
-      console.log('Processing ' + idx + ' of ' + this.lot_edges.length);
       const neighbours = get_neighbour(edge);	    
       if (neighbours.length > 1) {
         this.lots.push(neighbours);
       }	      
     })
+  }
+
+  lots_to_squares() {
+
+  }
+
+  add_grid() {
+
   }
 }
