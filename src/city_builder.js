@@ -62,6 +62,7 @@ module.exports = class CityBuilder {
   constructor(seed, num_curves, scale) {
     this.seed = seed
     this.scale = scale
+    this.size = seed * scale
     this.magic = this.seed / 2
     this.num_curves = num_curves
     this.next_street = -1;
@@ -78,7 +79,7 @@ module.exports = class CityBuilder {
     this.streets = [];
     this.lot_edges = [];
     this.lots = [];
-    this.grid = [];
+    this.grid = {x: [], y: []};
     this.squares = [[]];
     // Internal
     this.cols = []
@@ -464,7 +465,52 @@ module.exports = class CityBuilder {
 
   }
 
-  add_grid() {
+  split_line(line) {
+    for (var x=1; x < this.grid.x.length; x++) {
+      if (line.geometry.start.x <= this.grid.x[x].geometry.start.x) {
+        break;
+      }
+    }
+    for (var y=1; y < this.grid.y.length; y++) {
+      if (line.geometry.start.y <= this.grid.y[y].geometry.start.y) {
+        break;
+      }
+    }
+ 
+    const x_line_end = intersect(line.geometry.start.x,
+                                 line.geometry.start.y,
+                                 line.geometry.end.x,
+                                 line.geometry.end.y,
+                                 this.grid.x[x].geometry.start.x,
+                                 this.grid.x[x].geometry.start.y,
+                                 this.grid.x[x].geometry.end.x,
+                                 this.grid.x[x].geometry.end.y)
 
+    const y_line_end = intersect(line.geometry.start.x,
+                                 line.geometry.start.y,
+                                 line.geometry.end.x,
+                                 line.geometry.end.y,
+                                 this.grid.y[y].geometry.start.x,
+                                 this.grid.y[y].geometry.start.y,
+                                 this.grid.y[y].geometry.end.x,
+                                 this.grid.y[y].geometry.end.y)
+
+    // we are privileging x right now  
+
+    return {"square": {"x": x - 1, "y": y - 1}, "geometry": {"start": {"x": line.geometry.start.x,
+                                                                       "y": line.geometry.start.y}, 
+                                                             "end":   {"x": x_line_end.x,
+                                                                       "y": x_line_end.y}}};
+  }
+
+  add_grid(size) {
+    for (var x=0; x <= this.size; x+=size) {
+      this.grid.x.push({geometry: {start: {x: x, y: 0},
+                                   end: {x: x, y: this.size}}})
+    }    
+    for (var y=0; y <= this.size; y+=size) {
+      this.grid.y.push({geometry: {start: {x: 0, y: y},
+        end: {x: this.size, y: y}}})
+    } 
   }
 }

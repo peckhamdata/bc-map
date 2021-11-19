@@ -234,62 +234,6 @@ describe('City Builder', () => {
     expect(city_builder.lot_edges.length).toEqual(16)
   });
 
-  it('adds a grid of squares to the map', ()=> {
-    const seed = 1024
-    const num_curves = 16
-    const scale = 100
-    const city_builder = new CityBuilder(seed, num_curves, scale);
-
-    const expected = [
-      {x: 0,
-       y: 0,
-       geometry: {
-         start: {x: 0, y: 0},
-      	 end:   {x: 0, y: seed * scale}      
-       }
-      }	    
-    ]
-
-    city_builder.add_grid();
-    expect(city_builder.grid).toEqual(expected); 	  
-  });
-
-  it('divides edges into squares on the map', ()=> {
-    const seed = 1024
-    const num_curves = 16
-    const city_builder = new CityBuilder(seed, num_curves);
-
-    const streets = [
-      {
-        id: 0,
-        geometry: {
-          end: {x: 50, y: 200},
-          start: {x: 0, y: 0}
-        }
-      },
-      {
-        id: 0,
-        geometry: {
-          end: {x: 200, y: 50},
-          start: {x: 0, y: 100}
-        }
-      }
-    ]
-
-    city_builder.streets = streets;
-    city_builder.add_parallels(2);
-    city_builder.add_junctions();
-    city_builder.intersect_parallels();
-    city_builder.split_streets();
-
-    city_builder.lots_to_squares()
-
-    const expected = [];
-    
-    render_square(city_builder.squares[1,2], 'test.png');	  
-    expect(city_builder.squares).toEqual(expected);
-  });
-
 
   it('makes lots from edges', ()=> {
     const seed = 1024
@@ -360,7 +304,27 @@ describe('City Builder', () => {
   })
 });
 	  
-function render_square(lots, x, y, filename) {
+function render_square(line_sets, size, filename) {
+  const hp = require("harry-plotter");
+  const bresenham = require("bresenham");
+
+  var plotter = new hp.JimpPlotter(filename, size, size);
+  var colour_2 = {red: 0, green: 255, blue: 0};
+  var colour_3 = {red: 255, green: 0, blue: 0};
+  var colour_4 = {red: 255,   green: 0, blue: 0};
+
+  plotter.init(() => {
+    line_sets.forEach(set => {
+      set.forEach(line => {
+        var points = bresenham(line.geometry.start.x,
+          line.geometry.start.y,
+          line.geometry.end.x,
+          line.geometry.end.y);
+         plotter.plot_points(points, colour_3);
+      });
+    })
+    plotter.write();
+  });
 
 }
 
@@ -407,4 +371,238 @@ function render(city_builder, filename) {
   });
 }
 
-// If the first junction is at the start of your street and the end of another street - do nothing.
+
+it('adds a grid of squares to the map', ()=> {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+
+  const expected = {
+    "x": [
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 0
+          },
+          "end": {
+            "x": 0,
+            "y": 1024
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 200,
+            "y": 0
+          },
+          "end": {
+            "x": 200,
+            "y": 1024
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 400,
+            "y": 0
+          },
+          "end": {
+            "x": 400,
+            "y": 1024
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 600,
+            "y": 0
+          },
+          "end": {
+            "x": 600,
+            "y": 1024
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 800,
+            "y": 0
+          },
+          "end": {
+            "x": 800,
+            "y": 1024
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 1000,
+            "y": 0
+          },
+          "end": {
+            "x": 1000,
+            "y": 1024
+          }
+        }
+      }
+    ],
+    "y": [
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 0
+          },
+          "end": {
+            "x": 1024,
+            "y": 0
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 200
+          },
+          "end": {
+            "x": 1024,
+            "y": 200
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 400
+          },
+          "end": {
+            "x": 1024,
+            "y": 400
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 600
+          },
+          "end": {
+            "x": 1024,
+            "y": 600
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 800
+          },
+          "end": {
+            "x": 1024,
+            "y": 800
+          }
+        }
+      },
+      {
+        "geometry": {
+          "start": {
+            "x": 0,
+            "y": 1000
+          },
+          "end": {
+            "x": 1024,
+            "y": 1000
+          }
+        }
+      }
+    ]
+  }
+
+  city_builder.add_grid(200);
+  expect(city_builder.grid).toEqual(expected); 	  
+});
+
+it('puts an edge starting to the left of a vertical grid line in the column to the left', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = {"square":{"x":0, "y":0}, 
+                    "geometry":{"start":{"x":0,"y":0},"end":{"x":200,"y":200}}};
+  const actual = city_builder.split_line({"geometry":{"start":{"x":0,"y":0},"end":{"x":1024,"y":1024}}});
+  expect(actual).toEqual(expected);
+
+})
+
+it('puts an edge starting after the right most vertical grid line in the last column', () => {
+  
+})
+
+it('puts an edge starting below a horizontal grid line in the row below', () => {
+
+})
+
+it('puts an edge starting above the top horizontal grid line in the top row', () => {
+
+})
+
+it('cuts an edge when it intersects with the next grid line', () => {
+
+})
+
+it('deterimes if an edge is going left to right', () => {
+
+})
+
+it('deterimes if an edige is going bottom to top', () => {
+
+})
+
+it('divides edges into squares on the map', () => {
+  const seed = 1024
+  const num_curves = 16
+  const city_builder = new CityBuilder(seed, num_curves);
+
+  const streets = [
+    {
+      id: 0,
+      geometry: {
+        end: {x: 50, y: 200},
+        start: {x: 0, y: 0}
+      }
+    },
+    {
+      id: 0,
+      geometry: {
+        end: {x: 200, y: 50},
+        start: {x: 0, y: 100}
+      }
+    }
+  ]
+
+  city_builder.streets = streets;
+  city_builder.add_parallels(2);
+  city_builder.add_junctions();
+  city_builder.intersect_parallels();
+  city_builder.split_streets();
+
+  city_builder.lots_to_squares()
+
+  const expected = [];
+  
+  // render_square(city_builder.squares[1,2], 'test.png');	  
+  // expect(city_builder.squares).toEqual(expected);
+});
+
