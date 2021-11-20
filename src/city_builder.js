@@ -466,6 +466,7 @@ module.exports = class CityBuilder {
   }
 
   split_line(line) {
+
     for (var x=1; x < this.grid.x.length; x++) {
       if (line.geometry.start.x <= this.grid.x[x].geometry.start.x) {
         break;
@@ -476,31 +477,71 @@ module.exports = class CityBuilder {
         break;
       }
     }
- 
-    const x_line_end = intersect(line.geometry.start.x,
-                                 line.geometry.start.y,
-                                 line.geometry.end.x,
-                                 line.geometry.end.y,
-                                 this.grid.x[x].geometry.start.x,
-                                 this.grid.x[x].geometry.start.y,
-                                 this.grid.x[x].geometry.end.x,
-                                 this.grid.x[x].geometry.end.y)
 
-    const y_line_end = intersect(line.geometry.start.x,
-                                 line.geometry.start.y,
-                                 line.geometry.end.x,
-                                 line.geometry.end.y,
-                                 this.grid.y[y].geometry.start.x,
-                                 this.grid.y[y].geometry.start.y,
-                                 this.grid.y[y].geometry.end.x,
-                                 this.grid.y[y].geometry.end.y)
+    let x_column = x
+    let y_column = y
 
-    // we are privileging x right now  
+    let horizontal_intersect = intersect(line.geometry.start.x,
+                                         line.geometry.start.y,
+                                         line.geometry.end.x,
+                                         line.geometry.end.y,
+                                         this.grid.x[x].geometry.start.x,
+                                         this.grid.x[x].geometry.start.y,
+                                         this.grid.x[x].geometry.end.x,
+                                         this.grid.x[x].geometry.end.y)
+
+    let vertical_intersect = intersect(line.geometry.start.x,
+                                       line.geometry.start.y,
+                                       line.geometry.end.x,
+                                       line.geometry.end.y,
+                                       this.grid.y[y].geometry.start.x,
+                                       this.grid.y[y].geometry.start.y,
+                                       this.grid.y[y].geometry.end.x,
+                                       this.grid.y[y].geometry.end.y)
+
+    if (!horizontal_intersect) {
+      horizontal_intersect = intersect(line.geometry.start.x,
+        line.geometry.start.y,
+        line.geometry.end.x,
+        line.geometry.end.y,
+        this.grid.x[x-1].geometry.start.x,
+        this.grid.x[x-1].geometry.start.y,
+        this.grid.x[x-1].geometry.end.x,
+        this.grid.x[x-1].geometry.end.y)
+        x_column = x-1;
+    } 
+                         
+    if (!vertical_intersect) {
+      vertical_intersect = intersect(line.geometry.start.x,
+        line.geometry.start.y,
+        line.geometry.end.x,
+        line.geometry.end.y,
+        this.grid.y[y-1].geometry.start.x,
+        this.grid.y[y-1].geometry.start.y,
+        this.grid.y[y-1].geometry.end.x,
+        this.grid.y[y-1].geometry.end.y)
+        y_column = y-1;
+    }
+
+    let x_end 
+    let y_end 
+
+    // line is exiting the square at the horizontal grid line
+    if (horizontal_intersect.x == this.grid.x[x_column].geometry.start.x) {
+      x_end = horizontal_intersect.x
+      y_end = horizontal_intersect.y
+    }
+
+    // line is exiting the square at the vertical grid line
+    if (vertical_intersect.y == this.grid.y[y_column].geometry.start.y) {
+      x_end = vertical_intersect.x
+      y_end = vertical_intersect.y
+    }
 
     return {"square": {"x": x - 1, "y": y - 1}, "geometry": {"start": {"x": line.geometry.start.x,
                                                                        "y": line.geometry.start.y}, 
-                                                             "end":   {"x": x_line_end.x,
-                                                                       "y": x_line_end.y}}};
+                                                             "end":   {"x": x_end,
+                                                                       "y": y_end}}};
   }
 
   add_grid(size) {

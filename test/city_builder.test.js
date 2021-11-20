@@ -533,7 +533,7 @@ it('adds a grid of squares to the map', ()=> {
   expect(city_builder.grid).toEqual(expected); 	  
 });
 
-it('puts an edge starting to the left of a vertical grid line in the column to the left', () => {
+it('puts an edge starting to the left of and intersecting a vertical grid line in the column to the left', () => {
   const seed = 1024
   const num_curves = 16
   const scale = 1
@@ -545,6 +545,46 @@ it('puts an edge starting to the left of a vertical grid line in the column to t
   expect(actual).toEqual(expected);
 
 })
+
+it('puts an edge starting to the left of and intersecting a horizontal grid line in the column to the left', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = {"square":{"x":0, "y":0}, 
+                    "geometry":{"start":{"x":0,"y":0},"end":{"x":58,"y":200}}};
+  const actual = city_builder.split_line({"geometry":{"start":{"x":0,"y":0},"end":{"x":300,"y":1024}}});
+  expect(actual).toEqual(expected);
+
+})
+
+it('deals with right to left lines', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = {"square":{"x":1, "y":0}, 
+                    "geometry":{"start":{"x":300,"y":0},"end":{"x":260,"y":200}}};
+  const actual = city_builder.split_line({"geometry":{"start":{"x":300,"y":0},"end":{"x":100,"y":1024}}});
+  expect(actual).toEqual(expected);
+
+})
+
+it('deals with bottom to top lines', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = {"square":{"x":1, "y":1}, 
+                    "geometry":{"start":{"x":300,"y":300},"end":{"x":200,"y":200}}};
+  const actual = city_builder.split_line({"geometry":{"start":{"x":300,"y":300},"end":{"x":100,"y":100}}});
+  expect(actual).toEqual(expected);
+
+})
+
 
 it('puts an edge starting after the right most vertical grid line in the last column', () => {
   
