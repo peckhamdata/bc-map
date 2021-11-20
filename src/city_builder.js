@@ -468,27 +468,33 @@ module.exports = class CityBuilder {
   split_line(line) {
 
     for (var x=1; x < this.grid.x.length; x++) {
-      if (line.geometry.start.x <= this.grid.x[x].geometry.start.x) {
+      if (line.geometry.start.x < this.grid.x[x].geometry.start.x) {
         break;
       }
     }
     for (var y=1; y < this.grid.y.length; y++) {
-      if (line.geometry.start.y <= this.grid.y[y].geometry.start.y) {
+      if (line.geometry.start.y < this.grid.y[y].geometry.start.y) {
         break;
       }
     }
 
     let x_column = x
     let y_column = y
-
-    let horizontal_intersect = intersect(line.geometry.start.x,
-                                         line.geometry.start.y,
-                                         line.geometry.end.x,
-                                         line.geometry.end.y,
-                                         this.grid.x[x].geometry.start.x,
-                                         this.grid.x[x].geometry.start.y,
-                                         this.grid.x[x].geometry.end.x,
-                                         this.grid.x[x].geometry.end.y)
+    let horizontal_intersect
+    try {
+      horizontal_intersect = intersect(line.geometry.start.x,
+                                          line.geometry.start.y,
+                                          line.geometry.end.x,
+                                          line.geometry.end.y,
+                                          this.grid.x[x].geometry.start.x,
+                                          this.grid.x[x].geometry.start.y,
+                                          this.grid.x[x].geometry.end.x,
+                                          this.grid.x[x].geometry.end.y)
+      } catch(err) {
+        console.log(err.message)
+        console.log(x)
+        console.log(this.grid.y.length)
+      }    
 
     let vertical_intersect = intersect(line.geometry.start.x,
                                        line.geometry.start.y,
@@ -538,10 +544,39 @@ module.exports = class CityBuilder {
       y_end = vertical_intersect.y
     }
 
+    if (x_end == line.geometry.start.x && y_end == line.geometry.start.y) {
+      x_end = line.geometry.end.x
+      y_end = line.geometry.end.y
+    }
+
     return {"square": {"x": x - 1, "y": y - 1}, "geometry": {"start": {"x": line.geometry.start.x,
                                                                        "y": line.geometry.start.y}, 
                                                              "end":   {"x": x_end,
                                                                        "y": y_end}}};
+  }
+
+  line_to_squares(line) {
+    let sections = [];
+    while (true) {
+      console.log('line:    ', line);
+      const section = this.split_line(line); 
+      console.log('section:', section)
+      if (section.geometry.start.x == section.geometry.end.x && 
+          section.geometry.start.y == section.geometry.end.y) {
+        break;
+      }
+      sections.push(section);
+      const old_line = line;
+      line = {geometry: {start: {x: section.geometry.end.x,
+                                 y: section.geometry.end.y},
+                         end:   {x: old_line.geometry.end.x,
+                                 y: old_line.geometry.end.y}}}
+      if (line.geometry.start.x == line.geometry.end.x &&
+          line.geometry.start.y == line.geometry.end.y) {
+        break;
+      }                           
+    }
+    return sections;
   }
 
   add_grid(size) {

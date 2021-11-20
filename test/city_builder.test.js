@@ -585,28 +585,32 @@ it('deals with bottom to top lines', () => {
 
 })
 
-
-it('puts an edge starting after the right most vertical grid line in the last column', () => {
-  
-})
-
-it('puts an edge starting below a horizontal grid line in the row below', () => {
-
-})
-
-it('puts an edge starting above the top horizontal grid line in the top row', () => {
-
-})
-
-it('cuts an edge when it intersects with the next grid line', () => {
+it('deals with lines that end within squares', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = {"square":{"x":1, "y":1}, 
+                    "geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}};
+  const actual = city_builder.split_line({"geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}});
+  expect(actual).toEqual(expected);
 
 })
 
-it('deterimes if an edge is going left to right', () => {
+it('splits a line across multiple squares', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
 
-})
-
-it('deterimes if an edige is going bottom to top', () => {
+  const expected = [{"square":{"x":0, "y":0}, 
+                    "geometry":{"start":{"x":100,"y":100},"end":{"x":200,"y":200}}},
+                    {"square":{"x":1, "y":1}, 
+                    "geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}}];
+  const actual = city_builder.line_to_squares({"geometry":{"start":{"x":100,"y":100},"end":{"x":300,"y":300}}});
+  expect(actual).toEqual(expected);
 
 })
 
