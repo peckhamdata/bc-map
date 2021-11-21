@@ -82,7 +82,8 @@ module.exports = class CityBuilder {
     this.grid = {x: [], y: []};
     this.squares = [[]];
     // Internal
-    this.cols = []
+    this.cols = [];
+    this.width = undefined;
   }
 
   // TODO: Decide where the LCG Sequence generator belongs
@@ -465,94 +466,134 @@ module.exports = class CityBuilder {
 
   }
 
+  find_in_square(line, square) {
+
+    let x_end;
+    let y_end;
+    let top = false;
+    let bottom = false;
+    let left = false;
+    let right = false;
+
+    const hits_top = intersect(line.geometry.start.x,
+          line.geometry.start.y,
+          line.geometry.end.x,
+          line.geometry.end.y,
+          square.top.start.x,
+          square.top.start.y,
+          square.top.end.x,
+          square.top.end.y)
+
+    const hits_bottom = intersect(line.geometry.start.x,
+          line.geometry.start.y,
+          line.geometry.end.x,
+          line.geometry.end.y,
+          square.bottom.start.x,
+          square.bottom.start.y,
+          square.bottom.end.x,
+          square.bottom.end.y)
+
+    const hits_left = intersect(line.geometry.start.x,
+          line.geometry.start.y,
+          line.geometry.end.x,
+          line.geometry.end.y,
+          square.left.start.x,
+          square.left.start.y,
+          square.left.end.x,
+          square.left.end.y)
+
+    const hits_right = intersect(line.geometry.start.x,
+            line.geometry.start.y,
+            line.geometry.end.x,
+            line.geometry.end.y,
+            square.right.start.x,
+            square.right.start.y,
+            square.right.end.x,
+            square.right.end.y)
+
+    if (hits_top) {
+      top = true;
+      if (hits_top.x !== line.geometry.start.x & hits_top.y !== line.geometry.start.y) {
+        x_end = hits_top.x;
+        y_end = hits_top.y;
+      } 
+    }
+
+    if (hits_bottom) {
+      bottom = true;
+      if (hits_bottom.x !== line.geometry.start.x & hits_bottom.y !== line.geometry.start.y) {
+        x_end = hits_bottom.x;
+        y_end = hits_bottom.y;
+      }
+    }
+
+    if (hits_left) {
+      left = true;
+      if (hits_left.x !== line.geometry.start.x & hits_left.y !== line.geometry.start.y) {
+        x_end = hits_left.x;
+        y_end = hits_left.y;
+      }
+
+    }
+
+    if (hits_right) {
+      right = true;
+      if (hits_right.x !== line.geometry.start.x & hits_right.y !== line.geometry.start.y) {
+        x_end = hits_right.x;
+        y_end = hits_right.y;
+      }
+    }
+
+    return {x:x_end, y: y_end, hits_top: top, hits_left: left, hits_right: right, hits_bottom: bottom}
+  }
+
   split_line(line) {
 
-    for (var x=1; x < this.grid.x.length; x++) {
+    // Find which square the line starts in
+      
+    for (var x=0; x < this.grid.x.length; x++) {
       if (line.geometry.start.x < this.grid.x[x].geometry.start.x) {
         break;
       }
     }
-    for (var y=1; y < this.grid.y.length; y++) {
+    for (var y=0; y < this.grid.y.length; y++) {
       if (line.geometry.start.y < this.grid.y[y].geometry.start.y) {
         break;
       }
     }
 
-    let x_column = x
-    let y_column = y
-    let horizontal_intersect
-    try {
-      horizontal_intersect = intersect(line.geometry.start.x,
-                                          line.geometry.start.y,
-                                          line.geometry.end.x,
-                                          line.geometry.end.y,
-                                          this.grid.x[x].geometry.start.x,
-                                          this.grid.x[x].geometry.start.y,
-                                          this.grid.x[x].geometry.end.x,
-                                          this.grid.x[x].geometry.end.y)
-      } catch(err) {
-        console.log(err.message)
-        console.log(x)
-        console.log(this.grid.y.length)
-      }    
+    let x_column = x - 1;
+    let y_column = y - 1;
+    let end;
 
-    let vertical_intersect = intersect(line.geometry.start.x,
-                                       line.geometry.start.y,
-                                       line.geometry.end.x,
-                                       line.geometry.end.y,
-                                       this.grid.y[y].geometry.start.x,
-                                       this.grid.y[y].geometry.start.y,
-                                       this.grid.y[y].geometry.end.x,
-                                       this.grid.y[y].geometry.end.y)
+    let square = this.get_square(x_column, y_column);
+    end = this.find_in_square(line, square); // TODO: Rename to find exits
+    if (!end.x && !end.y) {
 
-    if (!horizontal_intersect) {
-      horizontal_intersect = intersect(line.geometry.start.x,
-        line.geometry.start.y,
-        line.geometry.end.x,
-        line.geometry.end.y,
-        this.grid.x[x-1].geometry.start.x,
-        this.grid.x[x-1].geometry.start.y,
-        this.grid.x[x-1].geometry.end.x,
-        this.grid.x[x-1].geometry.end.y)
-        x_column = x-1;
-    } 
-                         
-    if (!vertical_intersect) {
-      vertical_intersect = intersect(line.geometry.start.x,
-        line.geometry.start.y,
-        line.geometry.end.x,
-        line.geometry.end.y,
-        this.grid.y[y-1].geometry.start.x,
-        this.grid.y[y-1].geometry.start.y,
-        this.grid.y[y-1].geometry.end.x,
-        this.grid.y[y-1].geometry.end.y)
-        y_column = y-1;
+      // Check if line ends within square bounds   
+      if (line.geometry.end.x > square.left.start.x &&
+          line.geometry.end.x < square.right.start.x &&
+          line.geometry.end.y > square.top.start.y &&
+          line.geometry.end.y < square.bottom.start.y) {
+        end.x = line.geometry.end.x;
+        end.y = line.geometry.end.y;
+      } else {
+        // If line exited via the top, look in the square above
+        if (end.hits_top) {
+          square = this.get_square(x_column, y_column-1);
+          end = this.find_in_square(line, square);  
+        } else if (end.hits_bottom) {
+          square = this.get_square(x_column, y_column+1);
+          end = this.find_in_square(line, square);  
+        }
+      }
     }
-
-    let x_end 
-    let y_end 
-
-    // line is exiting the square at the horizontal grid line
-    if (horizontal_intersect.x == this.grid.x[x_column].geometry.start.x) {
-      x_end = horizontal_intersect.x
-      y_end = horizontal_intersect.y
-    }
-
-    // line is exiting the square at the vertical grid line
-    if (vertical_intersect.y == this.grid.y[y_column].geometry.start.y) {
-      x_end = vertical_intersect.x
-      y_end = vertical_intersect.y
-    }
-
-    if (x_end == line.geometry.start.x && y_end == line.geometry.start.y) {
-      x_end = line.geometry.end.x
-      y_end = line.geometry.end.y
-    }
+    
 
     return {"square": {"x": x - 1, "y": y - 1}, "geometry": {"start": {"x": line.geometry.start.x,
                                                                        "y": line.geometry.start.y}, 
-                                                             "end":   {"x": x_end,
-                                                                       "y": y_end}}};
+                                                             "end":   {"x": end.x,
+                                                                       "y": end.y}}};
   }
 
   line_to_squares(line) {
@@ -579,14 +620,36 @@ module.exports = class CityBuilder {
     return sections;
   }
 
-  add_grid(size) {
-    for (var x=0; x <= this.size; x+=size) {
+  split_lot(lot) {
+    lot.forEach((line) => {
+      const sections = this.line_to_squares(line);
+    })
+  }
+
+  add_grid(width) {
+    this.width = width
+    for (var x=0; x <= this.size; x+=this.width) {
       this.grid.x.push({geometry: {start: {x: x, y: 0},
                                    end: {x: x, y: this.size}}})
     }    
-    for (var y=0; y <= this.size; y+=size) {
+    for (var y=0; y <= this.size; y+=this.width) {
       this.grid.y.push({geometry: {start: {x: 0, y: y},
         end: {x: this.size, y: y}}})
     } 
+  }
+
+  get_square(x, y) {
+    const x_offset = x * this.width;
+    const y_offset = y * this.width;
+    const size = this.width;
+
+    return({top:    {start: {x: x_offset, y: y_offset},   
+                     end:   {x: x_offset + size, y: y_offset}},
+            bottom: {start: {x: x_offset, y: y_offset + size}, 
+                     end:   {x: x_offset + size, y: y_offset + size}},
+            left:   {start: {x: x_offset, y: y_offset},   
+                     end:   {x: x_offset, y: y_offset + size}},
+            right:  {start: {x: x_offset + size, y: y_offset},   
+                     end:   {x: x_offset + size, y: y_offset + size}}});
   }
 }
