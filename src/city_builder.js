@@ -81,6 +81,7 @@ module.exports = class CityBuilder {
     this.lots = [];
     this.grid = {x: [], y: []};
     this.squares = [[]];
+    this.splits;
     // Internal
     this.cols = [];
     this.width = undefined;
@@ -521,9 +522,13 @@ module.exports = class CityBuilder {
 
     if (hits_bottom) {
       bottom = true;
+      // console.log(hits_bottom)
       if (hits_bottom.x !== line.geometry.start.x & hits_bottom.y !== line.geometry.start.y) {
         x_end = hits_bottom.x;
         y_end = hits_bottom.y;
+      } else {
+        x_end = line.geometry.end.x;
+        y_end = line.geometry.end.y;
       }
     }
 
@@ -571,6 +576,15 @@ module.exports = class CityBuilder {
     if (!end.x && !end.y) {
 
       // Check if line ends within square bounds   
+      // console.log("end", end)
+      // console.log("line", line)
+      // console.log("square", square)
+
+      // console.log(line.geometry.end.x, square.left.start.x)
+      // console.log(line.geometry.end.x, square.right.start.x)
+      // console.log(line.geometry.end.y, square.top.start.y)
+      // console.log(line.geometry.end.y, square.bottom.start.y)
+
       if (line.geometry.end.x > square.left.start.x &&
           line.geometry.end.x < square.right.start.x &&
           line.geometry.end.y > square.top.start.y &&
@@ -580,17 +594,27 @@ module.exports = class CityBuilder {
       } else {
         // If line exited via the top, look in the square above
         if (end.hits_top) {
-          square = this.get_square(x_column, y_column-1);
+          y_column--
+          square = this.get_square(x_column, y_column);
           end = this.find_in_square(line, square);  
+          // console.log(end)
         } else if (end.hits_bottom) {
-          square = this.get_square(x_column, y_column+1);
+          y_column++
+          square = this.get_square(x_column, y_column);
+          end = this.find_in_square(line, square);  
+        } else if (end.hits_left) {
+          x_column--
+          square = this.get_square(x_column, y_column);
+          end = this.find_in_square(line, square);  
+        } else {
+          x_column++
+          square = this.get_square(x_column, y_column);
           end = this.find_in_square(line, square);  
         }
       }
     }
     
-
-    return {"square": {"x": x - 1, "y": y - 1}, "geometry": {"start": {"x": line.geometry.start.x,
+    return {"square": {"x": x_column, "y": y_column}, "geometry": {"start": {"x": line.geometry.start.x,
                                                                        "y": line.geometry.start.y}, 
                                                              "end":   {"x": end.x,
                                                                        "y": end.y}}};
@@ -598,16 +622,19 @@ module.exports = class CityBuilder {
 
   line_to_squares(line) {
     let sections = [];
-    while (true) {
-      console.log('line:    ', line);
+    let old_line;
+    let i = 0;
+    while (i < 10) {
+      i++;
+      // console.log('line:    ', line);
       const section = this.split_line(line); 
-      console.log('section:', section)
+      // console.log('section:', section)
       if (section.geometry.start.x == section.geometry.end.x && 
           section.geometry.start.y == section.geometry.end.y) {
         break;
       }
       sections.push(section);
-      const old_line = line;
+      old_line = line;
       line = {geometry: {start: {x: section.geometry.end.x,
                                  y: section.geometry.end.y},
                          end:   {x: old_line.geometry.end.x,
@@ -621,9 +648,19 @@ module.exports = class CityBuilder {
   }
 
   split_lot(lot) {
+
     lot.forEach((line) => {
       const sections = this.line_to_squares(line);
+      sections.forEach((section) => {
+        // TODO: IDs need to be preserved
+        try {
+          this.splits[section.square.x][section.square.y].push({geometry: section.geometry})
+        } catch (err) {
+          console.log(err, section)
+        }
+      })
     })
+    return this.splits;
   }
 
   add_grid(width) {
@@ -636,7 +673,19 @@ module.exports = class CityBuilder {
       this.grid.y.push({geometry: {start: {x: 0, y: y},
         end: {x: this.size, y: y}}})
     } 
+
+    const size = this.grid.x.length;
+    this.splits = new Array(size)
+    for (var i = 0; i < size; i++) {
+      this.splits[i] = new Array(size)
+      for (var j = 0; j < size; j++) {
+          this.splits[i][j] = []
+      }  
+    }
+
   }
+
+
 
   get_square(x, y) {
     const x_offset = x * this.width;

@@ -304,30 +304,6 @@ describe('City Builder', () => {
   })
 });
 	  
-function render_square(line_sets, size, filename) {
-  const hp = require("harry-plotter");
-  const bresenham = require("bresenham");
-
-  var plotter = new hp.JimpPlotter(filename, size, size);
-  var colour_2 = {red: 0, green: 255, blue: 0};
-  var colour_3 = {red: 255, green: 0, blue: 0};
-  var colour_4 = {red: 255,   green: 0, blue: 0};
-
-  plotter.init(() => {
-    line_sets.forEach(set => {
-      set.forEach(line => {
-        var points = bresenham(line.geometry.start.x,
-          line.geometry.start.y,
-          line.geometry.end.x,
-          line.geometry.end.y);
-         plotter.plot_points(points, colour_3);
-      });
-    })
-    plotter.write();
-  });
-
-}
-
 function render(city_builder, filename) {	
   const hp = require("harry-plotter");
   const bresenham = require("bresenham");
@@ -577,7 +553,7 @@ it('deals with right to left/bottom to top lines', () => {
   const scale = 1
   const city_builder = new CityBuilder(seed, num_curves, scale);
   city_builder.add_grid(200);
-  const expected = {"square":{"x":1, "y":2}, 
+  const expected = {"square":{"x":1, "y":1}, 
                     "geometry":{"start":{"x":295,"y":400},"end":{"x":200,"y":270}}};
   const actual = city_builder.split_line({"geometry":{"start":{"x":295,"y":400},"end":{"x":10,"y":10}}});
   expect(actual).toEqual(expected);
@@ -609,61 +585,77 @@ it('deals with lines that end within squares', () => {
 
 })
 
-// it('splits a line across multiple squares', () => {
-//   const seed = 1024
-//   const num_curves = 16
-//   const scale = 1
-//   const city_builder = new CityBuilder(seed, num_curves, scale);
-//   city_builder.add_grid(200);
+it('deals with a tricksy line', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = {"square":{"x":0, "y":0}, 
+                    "geometry":{"start":{"x":148,"y":200},"end":{"x":10,"y":10}}};
+  const actual = city_builder.split_line({ geometry: { start: { x: 148, y: 200 }, end: { x: 10, y: 10 } }});
+  expect(actual).toEqual(expected);
 
-//   const expected = [{"square":{"x":0, "y":0}, 
-//                     "geometry":{"start":{"x":100,"y":100},"end":{"x":200,"y":200}}},
-//                     {"square":{"x":1, "y":1}, 
-//                     "geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}}];
-//   // const actual = city_builder.line_to_squares({"geometry":{"start":{"x":100,"y":100},"end":{"x":300,"y":300}}});
-//   // expect(actual).toEqual(expected);
+})
 
-// })
+it('splits a line across multiple squares', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
 
-// it('splits a line across multiple squares right to left', () => {
-//   const seed = 1024
-//   const num_curves = 16
-//   const scale = 1
-//   const city_builder = new CityBuilder(seed, num_curves, scale);
-//   city_builder.add_grid(200);
+  const expected = [{"square":{"x":0, "y":0}, 
+                    "geometry":{"start":{"x":100,"y":100},"end":{"x":200,"y":200}}},
+                    {"square":{"x":1, "y":1}, 
+                    "geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}}];
+  const actual = city_builder.line_to_squares({"geometry":{"start":{"x":100,"y":100},"end":{"x":300,"y":300}}});
+  expect(actual).toEqual(expected);
 
-//   const expected = [{"square":{"x":1, "y":2}, 
-//                      "geometry":{"start":{"x":310,"y":420},"end":{"x":295,"y":400}}}, 
-//                     {"square":{"x":1, "y":1},
-//                      "geometry":{"start":{"x":295,"y":400},"end":{"x":200,"y":200}}},
-//                     {"square":{"x":0, "y":0},
-//                      "geometry":{"start":{"x":200,"y":200},"end":{"x":10,"y":10}}}                    
-//                     ];
-//   // const actual = city_builder.line_to_squares({"geometry":{"start":{"x":310,"y":420},"end":{"x":10,"y":10}}});
-//   // expect(actual).toEqual(expected);
+})
 
-// })
+it('splits a line across multiple squares right to left', () => {
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
 
+  const expected = [{"square":{"x":1, "y":2}, 
+                     "geometry":{"start":{"x":310,"y":420},"end":{"x":295,"y":400}}}, 
+                    {"square":{"x":1, "y":1},
+                     "geometry":{"start":{"x":295,"y":400},"end":{"x":200,"y":270}}},
+                     {"square":{"x":0, "y":1},
+                     "geometry":{"start":{"x":200,"y":270},"end":{"x":148,"y":200}}},
+                    {"square":{"x":0, "y":0},
+                     "geometry":{"start":{"x":148,"y":200},"end":{"x":10,"y":10}}}                    
+                    ];
+  const actual = city_builder.line_to_squares({"geometry":{"start":{"x":310,"y":420},"end":{"x":10,"y":10}}});
+  expect(actual).toEqual(expected);
+})
 
-// it('splits a lot across multiple squares', () => {
-//   const lot = [
-//     {id: 1, geometry: {start: {x: 10, y:10},
-//                        end:   {x: 210, y: 210}}},
-//     {id: 2, geometry: {start: {x: 210, y:210},
-//                        end:   {x: 310, y: 420}}},
-//     {id: 3, geometry: {start: {x: 310, y:420},
-//                        end:   {x: 10, y: 10}}}
-//   ]
-//   const seed = 1024
-//   const num_curves = 16
-//   const scale = 1
-//   const city_builder = new CityBuilder(seed, num_curves, scale);
-//   city_builder.add_grid(200);
-//   const expected = [];
+it('splits a lot across multiple squares', async () => {
+  const lot = [
+    {id: 1, geometry: {start: {x: 10, y:10},
+                       end:   {x: 210, y: 210}}},
+    {id: 2, geometry: {start: {x: 210, y:210},
+                       end:   {x: 310, y: 420}}},
+    {id: 3, geometry: {start: {x: 310, y:420},
+                       end:   {x: 10, y: 10}}}
+  ]
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+  city_builder.add_grid(200);
+  const expected = [];
 
-//   // const actual = city_builder.split_lot(lot)
-//   // expect(actual).toEqual(expected)
-// })
+  const actual = city_builder.split_lot(lot)
+  console.log(JSON.stringify(actual[0][0], null, 2))
+  await render_square(actual[0][0], 200, 'square.png');	  
+  expect(actual).toEqual(expected)
+
+})
 
 
 it('divides edges into squares on the map', () => {
@@ -724,3 +716,24 @@ it('gets the current square', () => {
   const actual_2 = city_builder.get_square(1,2)
   expect(actual_2).toEqual(expected[1])
 })
+
+async function render_square(square, size, filename) {
+  const hp = require("harry-plotter");
+  const bresenham = require("bresenham");
+
+  var plotter = new hp.JimpPlotter(filename, size, size);
+  var colour_2 = {red: 0, green: 255, blue: 0};
+  var colour_3 = {red: 255, green: 0, blue: 0};
+  var colour_4 = {red: 255, green: 0, blue: 0};
+  await plotter.init(() => {
+    square.forEach(line => {
+      var points = bresenham(line.geometry.start.x,
+        line.geometry.start.y,
+        line.geometry.end.x,
+        line.geometry.end.y);
+        plotter.plot_points(points, colour_3);
+    });
+    plotter.write();
+  });
+
+}
