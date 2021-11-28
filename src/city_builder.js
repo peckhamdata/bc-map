@@ -454,8 +454,9 @@ module.exports = class CityBuilder {
       }
       return [from_edge];
     }
-
+   
     this.lot_edges.forEach((edge, idx) => {
+      console.log('adding  edge ' + idx + ' of ' + this.lot_edges.length);
       const neighbours = get_neighbour(edge);	    
       if (neighbours.length > 1) {
         this.lots.push(neighbours);

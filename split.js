@@ -1,44 +1,25 @@
-const hp = require("harry-plotter");
-const bresenham = require("bresenham");
 const CityBuilder = require("./src/city_builder.js");
 
 const fs = require('fs');
 
 const seed = 1024
-const scale = 1
+const scale = 100
 const num_curves = 64
 const city_builder = new CityBuilder(seed, num_curves, scale);
 
-var plotter = new hp.JimpPlotter('./map_x_' + scale + '.png', seed, seed);
+let lots = fs.readFileSync('city_100.json');
+let city = JSON.parse(lots);
+city_builder.add_grid(250)
+city_builder.lots = lots
 
-plotter.init(function() {
+for (var i=0; i<city.length; i++) {
+  console.log("Splitting " + i + " of " + city.length);
+  city_builder.split_lot(city[i]);
+}
 
-  let rawdata = fs.readFileSync('city.json');
-  let city = JSON.parse(rawdata);
-  city_builder.add_grid(250)
+var squares = JSON.stringify(city_builder.splits, null, 2)
 
-  console.log(city.length)
-  for (var i=0; i<city.length; i++) {
-    city_builder.split_lot(city[i])
-  }
-  city_builder.splits.forEach((row) => {
-    row.forEach((cell) => {
-      let red = Math.floor(Math.random() * 255);
-      let green = Math.floor(Math.random() * 255);
-      let blue = Math.floor(Math.random() * 255);
-      let colour = {red: red, green: green, blue: blue};
-      cell.forEach((element) => {
-        var points = bresenham(element.geometry.start.x,
-          element.geometry.start.y,
-          element.geometry.end.x,
-          element.geometry.end.y);
-        plotter.plot_points(points, colour);
-      })  
-    }) 
-  })  
-  plotter.write();
-
-})
-
-
-
+fs.writeFile('city_squares_' + scale + '.json', squares, function (err) {
+  if (err) throw err;
+  console.log('saved');
+});
