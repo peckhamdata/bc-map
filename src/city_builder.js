@@ -464,10 +464,6 @@ module.exports = class CityBuilder {
     })
   }
 
-  lots_to_squares() {
-
-  }
-
   find_in_square(line, square) {
 
     let x_end;
