@@ -301,7 +301,453 @@ describe('City Builder', () => {
 
     render(city_builder, 'test_split.png');	  
 
-    const expected =  [[{"geometry": {"end": {"x": 4, "y": 24}, "start": {"x": 0, "y": 23}}, "id": 18}, {"geometry": {"end": {"x": 4, "y": 24}, "start": {"x": -2, "y": 0}}, "id": 0}], [{"geometry": {"end": {"x": 5, "y": 28}, "start": {"x": -1, "y": 26}}, "id": 14}, {"geometry": {"end": {"x": 6, "y": 33}, "start": {"x": 5, "y": 28}}, "id": 1}], [{"geometry": {"end": {"x": 23, "y": 100}, "start": {"x": 8, "y": 42}}, "id": 3}, {"geometry": {"end": {"x": 8, "y": 42}, "start": {"x": 3, "y": 36}}, "id": 27}, {"geometry": {"end": {"x": 23, "y": 100}, "start": {"x": 8, "y": 42}}, "id": 2}], [{"geometry": {"end": {"x": 23, "y": 33}, "start": {"x": 23, "y": 0}}, "id": 7}, {"geometry": {"end": {"x": 23, "y": 33}, "start": {"x": 7, "y": 26}}, "id": 19}, {"geometry": {"end": {"x": 7, "y": 26}, "start": {"x": 1, "y": -1}}, "id": 4}], [{"geometry": {"end": {"x": 23, "y": 51}, "start": {"x": 10, "y": 38}}, "id": 31}, {"geometry": {"end": {"x": 23, "y": 51}, "start": {"x": 23, "y": 36}}, "id": 8}, {"geometry": {"end": {"x": 23, "y": 36}, "start": {"x": 8, "y": 30}}, "id": 15}, {"geometry": {"end": {"x": 10, "y": 38}, "start": {"x": 8, "y": 30}}, "id": 5}], [{"geometry": {"end": {"x": 23, "y": 58}, "start": {"x": 13, "y": 47}}, "id": 28}, {"geometry": {"end": {"x": 23, "y": 87}, "start": {"x": 23, "y": 57}}, "id": 9}, {"geometry": {"end": {"x": 23, "y": 87}, "start": {"x": 13, "y": 47}}, "id": 6}], [{"geometry": {"end": {"x": 47, "y": 43}, "start": {"x": 43, "y": 0}}, "id": 22}, {"geometry": {"end": {"x": 47, "y": 43}, "start": {"x": 27, "y": 34}}, "id": 20}, {"geometry": {"end": {"x": 27, "y": 34}, "start": {"x": 27, "y": 0}}, "id": 11}], [{"geometry": {"end": {"x": 52, "y": 83}, "start": {"x": 27, "y": 56}}, "id": 32}, {"geometry": {"end": {"x": 52, "y": 83}, "start": {"x": 48, "y": 47}}, "id": 23}, {"geometry": {"end": {"x": 48, "y": 47}, "start": {"x": 27, "y": 38}}, "id": 16}, {"geometry": {"end": {"x": 27, "y": 56}, "start": {"x": 27, "y": 38}}, "id": 12}], [{"geometry": {"end": {"x": 53, "y": 91}, "start": {"x": 27, "y": 62}}, "id": 29}, {"geometry": {"end": {"x": 27, "y": 100}, "start": {"x": 27, "y": 62}}, "id": 13}], [{"geometry": {"end": {"x": 56, "y": 88}, "start": {"x": 55, "y": 87}}, "id": 33}, {"geometry": {"end": {"x": 56, "y": 89}, "start": {"x": 51, "y": 48}}, "id": 26}, {"geometry": {"end": {"x": 55, "y": 87}, "start": {"x": 51, "y": 48}}, "id": 25}, {"geometry": {"end": {"x": 79, "y": 61}, "start": {"x": 51, "y": 48}}, "id": 17}], [{"geometry": {"end": {"x": 51, "y": 45}, "start": {"x": 46, "y": -1}}, "id": 24}, {"geometry": {"end": {"x": 80, "y": 58}, "start": {"x": 51, "y": 45}}, "id": 21}], [{"geometry": {"end": {"x": 54, "y": 128}, "start": {"x": 154, "y": 88}}, "id": 38}, {"geometry": {"end": {"x": 152, "y": 88}, "start": {"x": 154, "y": 88}}, "id": 37}, {"geometry": {"end": {"x": 153, "y": 90}, "start": {"x": 143, "y": 0}}, "id": 35}, {"geometry": {"end": {"x": 152, "y": 88}, "start": {"x": 143, "y": 0}}, "id": 34}]];
+    const expected = [
+      [{
+        "geometry": {
+          "end": {
+            "x": 4,
+            "y": 24
+          },
+          "start": {
+            "x": 0,
+            "y": 23
+          }
+        },
+        "id": 18,
+        "street_id": 2
+      }, {
+        "geometry": {
+          "end": {
+            "x": 4,
+            "y": 24
+          },
+          "start": {
+            "x": -2,
+            "y": 0
+          }
+        },
+        "id": 0
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 5,
+            "y": 28
+          },
+          "start": {
+            "x": -1,
+            "y": 26
+          }
+        },
+        "id": 14
+      }, {
+        "geometry": {
+          "end": {
+            "x": 6,
+            "y": 33
+          },
+          "start": {
+            "x": 5,
+            "y": 28
+          }
+        },
+        "id": 1
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 100
+          },
+          "start": {
+            "x": 8,
+            "y": 42
+          }
+        },
+        "id": 3
+      }, {
+        "geometry": {
+          "end": {
+            "x": 8,
+            "y": 42
+          },
+          "start": {
+            "x": 3,
+            "y": 36
+          }
+        },
+        "id": 27
+      }, {
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 100
+          },
+          "start": {
+            "x": 8,
+            "y": 42
+          }
+        },
+        "id": 2
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 33
+          },
+          "start": {
+            "x": 23,
+            "y": 0
+          }
+        },
+        "id": 7
+      }, {
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 33
+          },
+          "start": {
+            "x": 7,
+            "y": 26
+          }
+        },
+        "id": 19
+      }, {
+        "geometry": {
+          "end": {
+            "x": 7,
+            "y": 26
+          },
+          "start": {
+            "x": 1,
+            "y": -1
+          }
+        },
+        "id": 4
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 51
+          },
+          "start": {
+            "x": 10,
+            "y": 38
+          }
+        },
+        "id": 31
+      }, {
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 51
+          },
+          "start": {
+            "x": 23,
+            "y": 36
+          }
+        },
+        "id": 8
+      }, {
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 36
+          },
+          "start": {
+            "x": 8,
+            "y": 30
+          }
+        },
+        "id": 15
+      }, {
+        "geometry": {
+          "end": {
+            "x": 10,
+            "y": 38
+          },
+          "start": {
+            "x": 8,
+            "y": 30
+          }
+        },
+        "id": 5
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 58
+          },
+          "start": {
+            "x": 13,
+            "y": 47
+          }
+        },
+        "id": 28
+      }, {
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 87
+          },
+          "start": {
+            "x": 23,
+            "y": 57
+          }
+        },
+        "id": 9
+      }, {
+        "geometry": {
+          "end": {
+            "x": 23,
+            "y": 87
+          },
+          "start": {
+            "x": 13,
+            "y": 47
+          }
+        },
+        "id": 6
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 47,
+            "y": 43
+          },
+          "start": {
+            "x": 43,
+            "y": 0
+          }
+        },
+        "id": 22
+      }, {
+        "geometry": {
+          "end": {
+            "x": 47,
+            "y": 43
+          },
+          "start": {
+            "x": 27,
+            "y": 34
+          }
+        },
+        "id": 20
+      }, {
+        "geometry": {
+          "end": {
+            "x": 27,
+            "y": 34
+          },
+          "start": {
+            "x": 27,
+            "y": 0
+          }
+        },
+        "id": 11
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 52,
+            "y": 83
+          },
+          "start": {
+            "x": 27,
+            "y": 56
+          }
+        },
+        "id": 32
+      }, {
+        "geometry": {
+          "end": {
+            "x": 52,
+            "y": 83
+          },
+          "start": {
+            "x": 48,
+            "y": 47
+          }
+        },
+        "id": 23
+      }, {
+        "geometry": {
+          "end": {
+            "x": 48,
+            "y": 47
+          },
+          "start": {
+            "x": 27,
+            "y": 38
+          }
+        },
+        "id": 16
+      }, {
+        "geometry": {
+          "end": {
+            "x": 27,
+            "y": 56
+          },
+          "start": {
+            "x": 27,
+            "y": 38
+          }
+        },
+        "id": 12
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 53,
+            "y": 91
+          },
+          "start": {
+            "x": 27,
+            "y": 62
+          }
+        },
+        "id": 29
+      }, {
+        "geometry": {
+          "end": {
+            "x": 27,
+            "y": 100
+          },
+          "start": {
+            "x": 27,
+            "y": 62
+          }
+        },
+        "id": 13
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 56,
+            "y": 88
+          },
+          "start": {
+            "x": 55,
+            "y": 87
+          }
+        },
+        "id": 33
+      }, {
+        "geometry": {
+          "end": {
+            "x": 56,
+            "y": 89
+          },
+          "start": {
+            "x": 51,
+            "y": 48
+          }
+        },
+        "id": 26
+      }, {
+        "geometry": {
+          "end": {
+            "x": 55,
+            "y": 87
+          },
+          "start": {
+            "x": 51,
+            "y": 48
+          }
+        },
+        "id": 25
+      }, {
+        "geometry": {
+          "end": {
+            "x": 79,
+            "y": 61
+          },
+          "start": {
+            "x": 51,
+            "y": 48
+          }
+        },
+        "id": 17
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 51,
+            "y": 45
+          },
+          "start": {
+            "x": 46,
+            "y": -1
+          }
+        },
+        "id": 24
+      }, {
+        "geometry": {
+          "end": {
+            "x": 80,
+            "y": 58
+          },
+          "start": {
+            "x": 51,
+            "y": 45
+          }
+        },
+        "id": 21
+      }],
+      [{
+        "geometry": {
+          "end": {
+            "x": 54,
+            "y": 128
+          },
+          "start": {
+            "x": 154,
+            "y": 88
+          }
+        },
+        "id": 38
+      }, {
+        "geometry": {
+          "end": {
+            "x": 152,
+            "y": 88
+          },
+          "start": {
+            "x": 154,
+            "y": 88
+          }
+        },
+        "id": 37
+      }, {
+        "geometry": {
+          "end": {
+            "x": 153,
+            "y": 90
+          },
+          "start": {
+            "x": 143,
+            "y": 0
+          }
+        },
+        "id": 35
+      }, {
+        "geometry": {
+          "end": {
+            "x": 152,
+            "y": 88
+          },
+          "start": {
+            "x": 143,
+            "y": 0
+          }
+        },
+        "id": 34
+      }]
+    ];
     expect(city_builder.lots).toEqual(expected);
   })
 });
@@ -333,7 +779,7 @@ function render(city_builder, filename) {
       let green = Math.floor(Math.random() * 255);
       let blue = Math.floor(Math.random() * 255);
       let colour = {red: red, green: green, blue: blue};
-      lot.forEach((side) => {
+      lot.edges.forEach((side) => {
         try {
           var points = bresenham(side.geometry.start.x,
             side.geometry.start.y,
@@ -637,14 +1083,23 @@ it('splits a line across multiple squares right to left', () => {
 })
 
 it('splits a lot across multiple squares', async () => {
-  const lot = [
-    {id: 1, geometry: {start: {x: 10, y:10},
-                       end:   {x: 210, y: 210}}},
-    {id: 2, geometry: {start: {x: 210, y:210},
-                       end:   {x: 310, y: 420}}},
-    {id: 3, geometry: {start: {x: 310, y:420},
-                       end:   {x: 10, y: 10}}}
-  ]
+  const lot = {
+    lot_id: 1,
+    lot_length: 100,
+    edges: [
+    {id: 1, 
+     street_id: 2,
+     geometry: {start: {x: 10, y:10},
+                end:   {x: 210, y: 210}}},
+    {id: 2,
+     street_id: 3,
+     geometry: {start: {x: 210, y:210},
+                end:   {x: 310, y: 420}}},
+    {id: 3,
+     street_id: 4,
+     geometry: {start: {x: 310, y:420},
+                end:   {x: 10, y: 10}}}]
+  }
   const seed = 1024
   const num_curves = 16
   const scale = 1
@@ -655,6 +1110,9 @@ it('splits a lot across multiple squares', async () => {
     [
       [
         {
+          "lot_id": 1,
+          "street_id": 1,
+          "lot_length": 100,
           "geometry": {
             "start": {
               "x": 10,
@@ -808,6 +1266,61 @@ it('splits a lot across multiple squares', async () => {
 
 })
 
+it('gets lot length', () => {
+
+  const lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 43,
+          "y": 0
+        },
+        "end": {
+          "x": 47,
+          "y": 43
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 27,
+          "y": 34
+        },
+        "end": {
+          "x": 47,
+          "y": 43
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 27,
+          "y": 0
+        },
+        "end": {
+          "x": 27,
+          "y": 34
+        }
+      }
+    }
+  ]
+
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
+
+  const actual = city_builder.lot_length(lot);
+  expect(actual).toEqual(98);
+})
 
 it('gets the current square', () => {
   const seed = 1024

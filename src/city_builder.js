@@ -67,6 +67,7 @@ module.exports = class CityBuilder {
     this.num_curves = num_curves
     this.next_street = -1;
     this.curve_num_points = this.seed
+    this.verbose = false
 
     this.bezier_sequence = this.lcg_sequence(this.magic,
                                              this.magic,
@@ -340,44 +341,8 @@ module.exports = class CityBuilder {
   split_streets() {
     const edges = ['minus', 'plus'];
     this.streets.forEach((street) => {
+      const street_id = street.id
       edges.forEach((edge) => {
-        if (street.edges[edge].junctions.length > 0) {
-          // These street ends are interesting but not lot edges		
-          //if (street.edges[edge].junctions[0].distance !== 0) {
-          //  if (edge === 'minus') {
-          //    this.lot_edges.push({
-          //      id: this.street_id(),
-          //      geometry: {
-          //        start: {
-          //          x: street.edges.minus.geometry.start.x,
-          //          y: street.edges.minus.geometry.start.y
-          //        },
-          //        end: {
-          //          x: street.edges.plus.geometry.start.x,
-          //          y: street.edges.plus.geometry.start.y
-          //        }
-          //      }
-          //    });
-          //  }
-          //}
-          //if (street.edges[edge].junctions[street.edges[edge].junctions.length-1].distance !== 0) {
-            //if (edge === 'minus') {
-              //this.lot_edges.push({
-              //  id: this.street_id(),
-              //  geometry: {
-              //    start: {
-              //      x: street.edges.minus.geometry.end.x,
-              //      y: street.edges.minus.geometry.end.y
-              //    },
-              //    end: {
-              //      x: street.edges.plus.geometry.end.x,
-              //      y: street.edges.plus.geometry.end.y
-              //    }
-              //  }
-              //});
-            //}
-          //}
-        }
 
         let start = {
           x: street.edges[edge].geometry.start.x,
@@ -397,6 +362,7 @@ module.exports = class CityBuilder {
               // reached a junction so set end to intersect
               end = {x: junction.x, y: junction.y};
               this.lot_edges.push({ id: this.street_id(),
+                                    street_id: street_id,
                                     geometry: {start: start, end: end}});
             } else {
               start = {x: junction.x, y: junction.y};
@@ -407,6 +373,7 @@ module.exports = class CityBuilder {
          if (state === 'seek_end') {
           this.lot_edges.push({
               id: this.street_id(),
+              street_id: street_id,
               geometry: {
                 start: start,
                 end: {
@@ -456,10 +423,15 @@ module.exports = class CityBuilder {
     }
    
     this.lot_edges.forEach((edge, idx) => {
-      console.log('adding  edge ' + idx + ' of ' + this.lot_edges.length);
+      if (this.verbose) {
+        console.log('adding  edge ' + idx + ' of ' + this.lot_edges.length);
+      }
       const neighbours = get_neighbour(edge);	    
       if (neighbours.length > 1) {
-        this.lots.push(neighbours);
+        const lot_length = this.lot_length(neighbours);
+        this.lots.push({lot_id: this.street_id(),
+                        lot_length: lot_length,
+                        edges: neighbours});
       }	      
     })
   }
@@ -646,12 +618,14 @@ module.exports = class CityBuilder {
 
   split_lot(lot) {
 
-    lot.forEach((line) => {
+    lot.edges.forEach((line) => {
       const sections = this.line_to_squares(line);
       sections.forEach((section) => {
         // TODO: IDs need to be preserved
         try {
-          this.splits[section.square.x][section.square.y].push({geometry: section.geometry})
+          this.splits[section.square.x][section.square.y].push({lot_id: lot.lot_id,
+                                                                lot_length: lot.lot_length,
+                                                                geometry: section.geometry})
         } catch (err) {
           console.log(err, section)
         }
@@ -682,7 +656,17 @@ module.exports = class CityBuilder {
 
   }
 
-
+  lot_length(lot) {
+    let length = 0;
+    lot.forEach((edge) => {
+      const edge_length = distance_between(edge.geometry.start.x,
+                                           edge.geometry.start.y,
+                                           edge.geometry.end.x,
+                                           edge.geometry.end.y);
+      length = length + edge_length;
+    })
+    return length;
+  }
 
   get_square(x, y) {
     const x_offset = x * this.width;
