@@ -600,9 +600,9 @@ module.exports = class CityBuilder {
     while (i < 10) {
       i++;
       // console.log('line:    ', line);
-      console.log("line_to_squares:line:" + JSON.stringify(line))
+      // console.log("line_to_squares:line:" + JSON.stringify(line))
       const section = this.split_line(line); 
-      console.log("line_to_squares:section:"+ JSON.stringify(section))
+      // console.log("line_to_squares:section:"+ JSON.stringify(section))
       // console.log('section:', section)
       if (section.geometry.start.x == section.geometry.end.x && 
           section.geometry.start.y == section.geometry.end.y) {
@@ -628,14 +628,15 @@ module.exports = class CityBuilder {
   split_lot(lot) {
 
     lot.edges.forEach((line) => {
-      console.log("split_lot:line:" + JSON.stringify(line))
       const sections = this.line_to_squares(line);
-      console.log("split_lot:sections:" + JSON.stringify(sections))
       sections.forEach((section) => {
         // TODO: IDs need to be preserved
         try {
+          // console.log("split_lot:section:" + JSON.stringify(section))
           this.splits[section.square.x][section.square.y].push({lot_id: lot.lot_id,
                                                                 lot_length: lot.lot_length,
+                                                                street_id: section.street_id,
+                                                                id: section.id,
                                                                 geometry: section.geometry})
         } catch (err) {
           console.log(err, section)
