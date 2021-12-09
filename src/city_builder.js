@@ -583,20 +583,26 @@ module.exports = class CityBuilder {
       }
     }
     
-    return {"square": {"x": x_column, "y": y_column}, "geometry": {"start": {"x": line.geometry.start.x,
-                                                                       "y": line.geometry.start.y}, 
-                                                             "end":   {"x": end.x,
-                                                                       "y": end.y}}};
+    return {"square": {"x": x_column, "y": y_column},
+            "street_id": line.street_id,
+            "id": line.id, 
+            "geometry": {"start": {"x": line.geometry.start.x,
+                                   "y": line.geometry.start.y}, 
+                         "end":   {"x": end.x,
+                                   "y": end.y}}};
   }
 
   line_to_squares(line) {
     let sections = [];
     let old_line;
     let i = 0;
+    const parent_id = line.id;
     while (i < 10) {
       i++;
       // console.log('line:    ', line);
+      console.log("line_to_squares:line:" + JSON.stringify(line))
       const section = this.split_line(line); 
+      console.log("line_to_squares:section:"+ JSON.stringify(section))
       // console.log('section:', section)
       if (section.geometry.start.x == section.geometry.end.x && 
           section.geometry.start.y == section.geometry.end.y) {
@@ -604,7 +610,10 @@ module.exports = class CityBuilder {
       }
       sections.push(section);
       old_line = line;
-      line = {geometry: {start: {x: section.geometry.end.x,
+      line = {street_id: old_line.street_id,
+              parent_id: parent_id,
+              id: this.street_id(),
+              geometry: {start: {x: section.geometry.end.x,
                                  y: section.geometry.end.y},
                          end:   {x: old_line.geometry.end.x,
                                  y: old_line.geometry.end.y}}}
@@ -619,7 +628,9 @@ module.exports = class CityBuilder {
   split_lot(lot) {
 
     lot.edges.forEach((line) => {
+      console.log("split_lot:line:" + JSON.stringify(line))
       const sections = this.line_to_squares(line);
+      console.log("split_lot:sections:" + JSON.stringify(sections))
       sections.forEach((section) => {
         // TODO: IDs need to be preserved
         try {
