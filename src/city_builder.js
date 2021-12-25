@@ -50,7 +50,7 @@ function parallel(line, offset = 0) {
 // Sort them based on distance from the start of the line:
 // https://stackoverflow.com/a/20916980/1064619
 
-function distance_between(x1, y1, x2, y2) {
+const distance_between = function(x1, y1, x2, y2) {
   var a = x1 - x2;
   var b = y1 - y2;
 
@@ -58,8 +58,9 @@ function distance_between(x1, y1, x2, y2) {
   return Math.floor(c);
 }
 
+exports.distance_between = distance_between
 
-exports.shorten_line = function(line, length) {
+const shorten_line = function(line, length) {
   // From: https://stackoverflow.com/a/24377363/1064619
   // Determine line lengths
   var xlen = line.geometry.end.x - line.geometry.start.x;
@@ -91,7 +92,9 @@ exports.shorten_line = function(line, length) {
                             }
 }
 
-exports.right_angle_line = function(line, dist) {
+exports.shorten_line = shorten_line;
+
+const right_angle_line = function(line, dist) {
 
   // From: https://stackoverflow.com/a/17989593/1064619
 
@@ -112,8 +115,10 @@ exports.right_angle_line = function(line, dist) {
   return [plus, minus];
 }
 
-exports.inside_lot = function(line, lot) {
-  let hit_count = 0;
+exports.right_angle_line = right_angle_line;
+
+const inside_lot = function(line, lot) {
+  let hits = [];
   lot.forEach((edge) => {
     const hit = intersect(line.geometry.start.x,
       line.geometry.start.y,
@@ -124,13 +129,61 @@ exports.inside_lot = function(line, lot) {
       edge.geometry.end.x,
       edge.geometry.end.y);
       if(hit) {
-        hit_count++;
+        hits.push(hit);
       }
   })
-  if (hit_count >1) {
-    return true;
+  if (hits.length > 1) {
+    return hits;
   }
   return false;
+}
+
+exports.inside_lot = inside_lot;
+
+exports.add_building = function(lot, line, offset) {
+  const size = 20
+  const magic = 1000
+  const waypoint = shorten_line(line, offset)
+  const perps = right_angle_line(waypoint, magic)
+  let perp_idx = 0
+  if (inside_lot(perps[perp_idx], lot) === false) {
+    perp_idx = 1
+  }
+  // First line is shortened perps[perp_idx]
+  let building = []
+  building.push(shorten_line(perps[perp_idx], size))
+
+  // TODO: Check we have not hit another edge of the lot
+
+  // Second line is parallel to lot edge.
+  const parallels = [parallel(waypoint.geometry, size),
+                     parallel(waypoint.geometry, -Math.abs(size))]
+  // Of the two parallel lines we want the one which intersects with the first line
+  if(intersect(parallels[0].geometry.start.x,
+               parallels[0].geometry.start.y,
+               parallels[0].geometry.end.x,
+               parallels[0].geometry.end.y,
+               building[0].geometry.start.x,
+               building[0].geometry.start.y,
+               building[0].geometry.end.x,
+               building[0].geometry.end.y)) {
+    building.push(parallels[0])
+  } else {
+    building.push(parallels[1])
+  }
+  let start;
+  if (building[1].geometry.start.x == building[0].geometry.end.x &&
+      building[1].geometry.start.y == building[0].geometry.end.y) {
+    start = {x: building[1].geometry.end.x, y: building[1].geometry.end.y}
+  } else {
+    start = {x: building[1].geometry.start.x, y: building[1].geometry.start.y}
+  }        
+  building.push({geometry: {start: start,
+                            end:   {x: waypoint.geometry.start.x,
+                                    y: waypoint.geometry.start.y}}})         
+
+  return {building: building, offset: {x: waypoint.geometry.end.x,
+                                       y: waypoint.geometry.end.y}}
 }
 
 exports.CityBuilder = class {

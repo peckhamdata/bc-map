@@ -1,7 +1,9 @@
 const {CityBuilder, 
        shorten_line, 
        right_angle_line,
-       inside_lot } = require("../src/city_builder.js");
+       inside_lot,
+       add_building,
+       distance_between } = require("../src/city_builder.js");
 
 const two_streets = [
       {
@@ -782,7 +784,6 @@ it('finds a point N pixels along a line', async () => {
   expect(actual).toEqual(expected);                           
 })
 
-
 it('makes a line at a right angle to this one', async () => {
   const line = { geometry: {start: {x: 0, y: 0}, end: {x: 32, y: 38 }}}                         
   const expected = [{"geometry":{"start":{"x":32,"y":38},"end":{"x":-7,"y":70}}},{"geometry":{"start":{"x":70,"y":5},"end":{"x":32,"y":38}}}]
@@ -852,12 +853,114 @@ it('sees if right angle line interects with a lot edge', () => {
 
   const waypoint = shorten_line(lot[0], 50)
   const perps = right_angle_line(waypoint, 100)
-  expect(inside_lot(perps[0], lot)).toEqual(true);
+  expect(inside_lot(perps[0], lot)).toBeTruthy();
   expect(inside_lot(perps[1], lot)).toEqual(false);
-  render_square(lot.concat(perps), 200, "foo.png");
+
+  let lines = lot;
+  lot.forEach((edge) => {
+    const length = distance_between(edge.geometry.start.x,
+                                    edge.geometry.start.y,
+                                    edge.geometry.end.x,
+                                    edge.geometry.end.y)
+    for (var i=0; i < length; i+=50) {
+      const waypoint = shorten_line(edge, i)
+      const perps = right_angle_line(waypoint, 1000)
+      const left_hand = inside_lot(perps[0], lot)
+      if(left_hand) {
+        lines.push({geometry: {start: left_hand[0],
+                               end:   left_hand[1]}})
+      }
+      const right_hand = inside_lot(perps[1], lot)
+      if(right_hand) {
+        lines.push({geometry: {start: right_hand[0],
+                               end:   right_hand[1]}})
+      }
+    }
+  })
+  render_square(lines, 250, "foo.png");
 })
 
+it('adds a building to the lot', async() => {
 
+  let lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
+  let buildings = []
+  const offset = 20
+  lot.forEach((edge) => {
+    let build = add_building(lot, edge, offset);
+    buildings = buildings.concat(build.building)                                              
+    while (true) {
+      if (offset >= distance_between(build.offset.x,
+                                     build.offset.y,
+                                     edge.geometry.end.x,
+                                     edge.geometry.end.y)) {
+                                       break;
+                                     }
+      build = add_building(lot, {geometry: {start: {x: build.offset.x,
+                                                    y: build.offset.y},
+                                            end:   edge.geometry.end}}, offset);
+      buildings = buildings.concat(build.building)
+    }
+  })
+  buildings = buildings.concat(lot)
+  render_square(buildings, 250, "foo.png");
+})
 
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
