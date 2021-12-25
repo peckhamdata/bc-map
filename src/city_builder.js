@@ -60,6 +60,7 @@ function distance_between(x1, y1, x2, y2) {
 
 
 exports.shorten_line = function(line, length) {
+  // From: https://stackoverflow.com/a/24377363/1064619
   // Determine line lengths
   var xlen = line.geometry.end.x - line.geometry.start.x;
   var ylen = line.geometry.end.y - line.geometry.start.y;
@@ -88,6 +89,23 @@ exports.shorten_line = function(line, length) {
                      end:   {x: Math.floor(smallerX),
                              y: Math.floor(smallerY)}}
                             }
+}
+
+exports.right_angle_line = function(line) {
+
+  // From: https://stackoverflow.com/a/17989593/1064619
+
+  const angle = Math.atan2(line.geometry.end.y - line.geometry.start.y, 
+                           line.geometry.end.x - line.geometry.start.x);
+  const dist = 20;
+
+  // Draw a normal to the line above
+  const intersect = {geometry: {start: {x:Math.floor((Math.sin(angle) * dist + line.geometry.end.x)),
+                                        y:Math.floor((-Math.cos(angle) * dist + line.geometry.end.y))},
+                                end:   {x:Math.floor((-Math.sin(angle) * dist + line.geometry.end.x)),
+                                        y:Math.floor((Math.cos(angle) * dist + line.geometry.end.y))}}}
+
+  return intersect;
 }
 
 exports.CityBuilder = class {

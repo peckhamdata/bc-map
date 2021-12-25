@@ -1,4 +1,4 @@
-const {CityBuilder, shorten_line } = require("../src/city_builder.js");
+const {CityBuilder, shorten_line, right_angle_line } = require("../src/city_builder.js");
 
 const two_streets = [
       {
@@ -780,8 +780,10 @@ it('finds a point N pixels along a line', async () => {
 })
 
 
-it('makes a line at a right angle to this one', () => {
-
+it('makes a line at a right angle to this one', async () => {
+  const line = { geometry: {start: {x: 0, y: 0}, end: {x: 32, y: 38 }}}                         
+  const actual = right_angle_line(line);
+  render_square([line, actual], 250, "foo.png");
 })
 
 it('sees if right angle line interects with a lot edge', () => {
