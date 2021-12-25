@@ -1,4 +1,7 @@
-const {CityBuilder, shorten_line, right_angle_line } = require("../src/city_builder.js");
+const {CityBuilder, 
+       shorten_line, 
+       right_angle_line,
+       inside_lot } = require("../src/city_builder.js");
 
 const two_streets = [
       {
@@ -782,12 +785,76 @@ it('finds a point N pixels along a line', async () => {
 
 it('makes a line at a right angle to this one', async () => {
   const line = { geometry: {start: {x: 0, y: 0}, end: {x: 32, y: 38 }}}                         
-  const actual = right_angle_line(line);
-  render_square([line, actual], 250, "foo.png");
+  const expected = [{"geometry":{"start":{"x":32,"y":38},"end":{"x":-7,"y":70}}},{"geometry":{"start":{"x":70,"y":5},"end":{"x":32,"y":38}}}]
+  const actual = right_angle_line(line, 50);
+  expect(actual).toEqual(expected);
 })
 
 it('sees if right angle line interects with a lot edge', () => {
+  let lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
 
+  const waypoint = shorten_line(lot[0], 50)
+  const perps = right_angle_line(waypoint, 100)
+  expect(inside_lot(perps[0], lot)).toEqual(true);
+  expect(inside_lot(perps[1], lot)).toEqual(false);
+  render_square(lot.concat(perps), 200, "foo.png");
 })
 
 
@@ -795,13 +862,13 @@ it('sees if right angle line interects with a lot edge', () => {
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
   const bresenham = require("bresenham");
+  var colour = {red:   Math.floor(Math.random() * 255), 
+    green: Math.floor(Math.random() * 255),
+    blue:  Math.floor(Math.random() * 255)};
 
   var plotter = new hp.JimpPlotter(filename, size, size);
   await plotter.init(() => {
     square.forEach(line => {
-      var colour = {red:   Math.floor(Math.random() * 255), 
-                    green: Math.floor(Math.random() * 255),
-                    blue:  Math.floor(Math.random() * 255)};
       var points = bresenham(line.geometry.start.x,
         line.geometry.start.y,
         line.geometry.end.x,

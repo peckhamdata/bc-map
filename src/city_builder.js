@@ -91,21 +91,46 @@ exports.shorten_line = function(line, length) {
                             }
 }
 
-exports.right_angle_line = function(line) {
+exports.right_angle_line = function(line, dist) {
 
   // From: https://stackoverflow.com/a/17989593/1064619
 
   const angle = Math.atan2(line.geometry.end.y - line.geometry.start.y, 
                            line.geometry.end.x - line.geometry.start.x);
-  const dist = 20;
 
   // Draw a normal to the line above
-  const intersect = {geometry: {start: {x:Math.floor((Math.sin(angle) * dist + line.geometry.end.x)),
-                                        y:Math.floor((-Math.cos(angle) * dist + line.geometry.end.y))},
-                                end:   {x:Math.floor((-Math.sin(angle) * dist + line.geometry.end.x)),
-                                        y:Math.floor((Math.cos(angle) * dist + line.geometry.end.y))}}}
+  const plus = {geometry: {start: {x:line.geometry.end.x,
+                                   y:line.geometry.end.y},
+                           end:   {x:Math.floor((-Math.sin(angle) * dist + line.geometry.end.x)),
+                                   y:Math.floor((Math.cos(angle) * dist + line.geometry.end.y))}}}
 
-  return intersect;
+  const minus = {geometry: {start: {x:Math.floor((Math.sin(angle) * dist + line.geometry.end.x)),
+                                    y:Math.floor((-Math.cos(angle) * dist + line.geometry.end.y))},
+                            end:  {x:line.geometry.end.x,
+                                   y:line.geometry.end.y}}}
+                                    
+  return [plus, minus];
+}
+
+exports.inside_lot = function(line, lot) {
+  let hit_count = 0;
+  lot.forEach((edge) => {
+    const hit = intersect(line.geometry.start.x,
+      line.geometry.start.y,
+      line.geometry.end.x,
+      line.geometry.end.y,
+      edge.geometry.start.x,
+      edge.geometry.start.y,
+      edge.geometry.end.x,
+      edge.geometry.end.y);
+      if(hit) {
+        hit_count++;
+      }
+  })
+  if (hit_count >1) {
+    return true;
+  }
+  return false;
 }
 
 exports.CityBuilder = class {
