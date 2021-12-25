@@ -301,6 +301,11 @@ describe('City Builder', () => {
 
     render(city_builder, 'test_split.png');	  
 
+    const expected = [
+      undefined,
+      {"edges": [{"geometry": {"end": {"x": 5, "y": 28}, "start": {"x": -1, "y": 26}}, "id": 14, "street_id": 2}, {"geometry": {"end": {"x": 6, "y": 33}, "start": {"x": 5, "y": 28}}, "id": 1, "street_id": 0}], "lot_id": 41, "lot_length": 11}
+    ];
+    expect(city_builder.lots[1]).toEqual(expected[1]);
   })
 });
 	  
@@ -331,7 +336,7 @@ function render(city_builder, filename) {
       let green = Math.floor(Math.random() * 255);
       let blue = Math.floor(Math.random() * 255);
       let colour = {red: red, green: green, blue: blue};
-      lot.forEach((side) => {
+      lot.edges.forEach((side) => {
         try {
           var points = bresenham(side.geometry.start.x,
             side.geometry.start.y,
@@ -606,12 +611,18 @@ it('splits a line across multiple squares', () => {
   city_builder.add_grid(200);
 
   const expected = [{"square":{"x":0, "y":0}, 
-                    "geometry":{"start":{"x":100,"y":100},"end":{"x":200,"y":200}}},
+                     "street_id": 1,
+                     "id": 100,
+                     "geometry":{"start":{"x":100,"y":100},"end":{"x":200,"y":200}}},
                     {"square":{"x":1, "y":1}, 
-                    "geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}}];
-  const actual = city_builder.line_to_squares({"geometry":{"start":{"x":100,"y":100},"end":{"x":300,"y":300}}});
+                     "street_id": 1,
+                     "id": 0,
+                     "geometry":{"start":{"x":200,"y":200},"end":{"x":300,"y":300}}}];
+  const actual = city_builder.line_to_squares({
+    "street_id": 1,
+    "id": 100,
+    "geometry":{"start":{"x":100,"y":100},"end":{"x":300,"y":300}}});
   expect(actual).toEqual(expected);
-
 })
 
 it('splits a line across multiple squares right to left', () => {
@@ -622,77 +633,118 @@ it('splits a line across multiple squares right to left', () => {
   city_builder.add_grid(200);
 
   const expected = [{"square":{"x":1, "y":2}, 
+                     "street_id": 1,
+                     "id": 100,
                      "geometry":{"start":{"x":310,"y":420},"end":{"x":295,"y":400}}}, 
                     {"square":{"x":1, "y":1},
+                     "street_id": 1,
+                     "id": 0,
                      "geometry":{"start":{"x":295,"y":400},"end":{"x":200,"y":270}}},
-                     {"square":{"x":0, "y":1},
+                    {"square":{"x":0, "y":1},
+                     "street_id": 1,
+                     "id": 1,
                      "geometry":{"start":{"x":200,"y":270},"end":{"x":148,"y":200}}},
                     {"square":{"x":0, "y":0},
+                     "street_id": 1,
+                     "id": 2,
                      "geometry":{"start":{"x":148,"y":200},"end":{"x":10,"y":10}}}                    
                     ];
-  const actual = city_builder.line_to_squares({"geometry":{"start":{"x":310,"y":420},"end":{"x":10,"y":10}}});
+  const actual = city_builder.line_to_squares({
+    "street_id": 1,
+    "id": 100,
+    "geometry":{"start":{"x":310,"y":420},"end":{"x":10,"y":10}}});
   expect(actual).toEqual(expected);
 })
 
 it('splits a lot across multiple squares', async () => {
-  const lot = [
-    {id: 1, geometry: {start: {x: 10, y:10},
-                       end:   {x: 210, y: 210}}},
-    {id: 2, geometry: {start: {x: 210, y:210},
-                       end:   {x: 310, y: 420}}},
-    {id: 3, geometry: {start: {x: 310, y:420},
-                       end:   {x: 10, y: 10}}}
-  ]
+  const lot = {
+    lot_id: 1,
+    lot_length: 100,
+    edges: [
+    {id: 1, 
+     street_id: 2,
+     geometry: {start: {x: 10, y:10},
+                end:   {x: 210, y: 210}}},
+    {id: 2,
+     street_id: 3,
+     geometry: {start: {x: 210, y:210},
+                end:   {x: 310, y: 420}}},
+    {id: 3,
+     street_id: 4,
+     geometry: {start: {x: 310, y:420},
+                end:   {x: 10, y: 10}}}]
+  }
   const seed = 1024
   const num_curves = 16
   const scale = 1
   const city_builder = new CityBuilder(seed, num_curves, scale);
   city_builder.add_grid(200);
-  const expected = [];
+  const expected = [undefined,
+    [[], [{"geometry": {"end": {"x": 210, "y": 210}, "start": {"x": 200, "y": 200}}, "id": 0, "lot_id": 1, "lot_length": 100, "street_id": 2}, {"geometry": {"end": {"x": 300, "y": 400}, "start": {"x": 210, "y": 210}}, "id": 2, "lot_id": 1, "lot_length": 100, "street_id": 3}, {"geometry": {"end": {"x": 200, "y": 270}, "start": {"x": 295, "y": 400}}, "id": 4, "lot_id": 1, "lot_length": 100, "street_id": 4}], [{"geometry": {"end": {"x": 310, "y": 420}, "start": {"x": 300, "y": 400}}, "id": 2, "lot_id": 1, "lot_length": 100, "street_id": 3}, {"geometry": {"end": {"x": 295, "y": 400}, "start": {"x": 310, "y": 420}}, "id": 3, "lot_id": 1, "lot_length": 100, "street_id": 4}], [], [], []]
+  ]
+
 
   const actual = city_builder.split_lot(lot)
-  console.log(JSON.stringify(actual[0][0], null, 2))
   await render_square(actual[0][0], 200, 'square.png');	  
-  expect(actual).toEqual(expected)
+  expect(actual[1]).toEqual(expected[1])
 
 })
 
+it('gets lot length', () => {
 
-it('divides edges into squares on the map', () => {
-  const seed = 1024
-  const num_curves = 16
-  const city_builder = new CityBuilder(seed, num_curves);
-
-  const streets = [
+  const lot = [
     {
-      id: 0,
-      geometry: {
-        end: {x: 50, y: 200},
-        start: {x: 0, y: 0}
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 43,
+          "y": 0
+        },
+        "end": {
+          "x": 47,
+          "y": 43
+        }
       }
     },
     {
-      id: 0,
-      geometry: {
-        end: {x: 200, y: 50},
-        start: {x: 0, y: 100}
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 27,
+          "y": 34
+        },
+        "end": {
+          "x": 47,
+          "y": 43
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 27,
+          "y": 0
+        },
+        "end": {
+          "x": 27,
+          "y": 34
+        }
       }
     }
   ]
 
-  city_builder.streets = streets;
-  city_builder.add_parallels(2);
-  city_builder.add_junctions();
-  city_builder.intersect_parallels();
-  city_builder.split_streets();
+  const seed = 1024
+  const num_curves = 16
+  const scale = 1
+  const city_builder = new CityBuilder(seed, num_curves, scale);
 
-  city_builder.lots_to_squares()
-
-  const expected = [];
-  
-  // render_square(city_builder.squares[1,2], 'test.png');	  
-  // expect(city_builder.squares).toEqual(expected);
-});
+  const actual = city_builder.lot_length(lot);
+  expect(actual).toEqual(98);
+})
 
 it('gets the current square', () => {
   const seed = 1024

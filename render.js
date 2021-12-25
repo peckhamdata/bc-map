@@ -4,13 +4,13 @@ const bresenham = require("bresenham");
 const fs = require('fs');
 
 const seed = 1024
-const scale = 20
+const scale = 10
 const size = seed * scale
 var plotter = new hp.JimpPlotter('./map_x_' + scale + '.png', size, size);
 
 plotter.init(function() {
 
-  let rawdata = fs.readFileSync('enlarged_city.json');
+  let rawdata = fs.readFileSync('city_' + scale + '.json');
   let city = JSON.parse(rawdata);
 
   let enlarged = [];
