@@ -58,7 +58,39 @@ function distance_between(x1, y1, x2, y2) {
   return Math.floor(c);
 }
 
-module.exports = class CityBuilder {
+
+exports.shorten_line = function(line, length) {
+  // Determine line lengths
+  var xlen = line.geometry.end.x - line.geometry.start.x;
+  var ylen = line.geometry.end.y - line.geometry.start.y;
+
+  // Determine hypotenuse length
+  var hlen = Math.sqrt(Math.pow(xlen,2) + Math.pow(ylen,2));
+
+  // The variable identifying the length of the `shortened` line.
+  // In this case 50 units.
+  var smallerLen = length;
+
+  // Determine the ratio between they shortened value and the full hypotenuse.
+  var ratio = smallerLen / hlen;
+
+  var smallerXLen = xlen * ratio;
+  var smallerYLen = ylen * ratio;
+
+  // The new X point is the starting x plus the smaller x length.
+  var smallerX = line.geometry.start.x + smallerXLen;
+
+  // Same goes for the new Y.
+  var smallerY = line.geometry.start.y + smallerYLen;
+
+  return {geometry: {start: {x: line.geometry.start.x,
+                             y: line.geometry.start.y},
+                     end:   {x: Math.floor(smallerX),
+                             y: Math.floor(smallerY)}}
+                            }
+}
+
+exports.CityBuilder = class {
   constructor(seed, num_curves, scale) {
     this.seed = seed
     this.scale = scale

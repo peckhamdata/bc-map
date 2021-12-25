@@ -15,7 +15,7 @@ plotter.init(function() {
 
   let rawdata = fs.readFileSync('city.json');
   let city = JSON.parse(rawdata);
-  city_builder.add_grid(250)
+  city_builder.add_grid(200)
 
   console.log(city.length)
   for (var i=0; i<city.length; i++) {

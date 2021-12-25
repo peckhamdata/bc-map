@@ -1,4 +1,4 @@
-const CityBuilder = require("../src/city_builder.js");
+const {CityBuilder, shorten_line } = require("../src/city_builder.js");
 
 const two_streets = [
       {
@@ -717,23 +717,45 @@ it('gets the current square', () => {
   expect(actual_2).toEqual(expected[1])
 })
 
+it('finds a point N pixels along a line', async () => {
+
+  const line = {geometry: {start: {x:0, y:0}, 
+                           end:   {x:100, y: 120}}}
+
+  const expected = { geometry: {start: {x: 0, y: 0}, end: {x: 32, y: 38 }}}                         
+  const actual = shorten_line(line, 50);
+  expect(actual).toEqual(expected);                           
+})
+
+
+it('makes a line at a right angle to this one', () => {
+
+})
+
+it('sees if right angle line interects with a lot edge', () => {
+
+})
+
+
+
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
   const bresenham = require("bresenham");
 
   var plotter = new hp.JimpPlotter(filename, size, size);
-  var colour_2 = {red: 0, green: 255, blue: 0};
-  var colour_3 = {red: 255, green: 0, blue: 0};
-  var colour_4 = {red: 255, green: 0, blue: 0};
   await plotter.init(() => {
     square.forEach(line => {
+      var colour = {red:   Math.floor(Math.random() * 255), 
+                    green: Math.floor(Math.random() * 255),
+                    blue:  Math.floor(Math.random() * 255)};
       var points = bresenham(line.geometry.start.x,
         line.geometry.start.y,
         line.geometry.end.x,
         line.geometry.end.y);
-        plotter.plot_points(points, colour_3);
+        plotter.plot_points(points, colour);
     });
     plotter.write();
   });
 
 }
+
