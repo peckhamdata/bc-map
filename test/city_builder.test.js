@@ -856,29 +856,6 @@ it('sees if right angle line interects with a lot edge', () => {
   const perps = right_angle_line(waypoint, 100)
   expect(inside_lot(perps[0], lot)).toBeTruthy();
   expect(inside_lot(perps[1], lot)).toEqual(false);
-
-  let lines = lot;
-  lot.forEach((edge) => {
-    const length = distance_between(edge.geometry.start.x,
-                                    edge.geometry.start.y,
-                                    edge.geometry.end.x,
-                                    edge.geometry.end.y)
-    for (var i=0; i < length; i+=50) {
-      const waypoint = shorten_line(edge, i)
-      const perps = right_angle_line(waypoint, 1000)
-      const left_hand = inside_lot(perps[0], lot)
-      if(left_hand) {
-        lines.push({geometry: {start: left_hand[0],
-                               end:   left_hand[1]}})
-      }
-      const right_hand = inside_lot(perps[1], lot)
-      if(right_hand) {
-        lines.push({geometry: {start: right_hand[0],
-                               end:   right_hand[1]}})
-      }
-    }
-  })
-  render_square(lines, 250, "foo.png");
 })
 
 it('adds a building to the lot', async() => {
