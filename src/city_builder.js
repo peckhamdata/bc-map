@@ -147,7 +147,7 @@ const inside_lot = function(line, lot) {
 
 exports.inside_lot = inside_lot;
 
-exports.add_building = function(lot, edge, from, to) {
+const add_building = function(lot, edge, from, to) {
   let size = 20
   const magic = 1000
 
@@ -190,6 +190,8 @@ exports.add_building = function(lot, edge, from, to) {
 
   return building
 }
+
+exports.add_building = add_building
 
 exports.intersects = function(shape, existing) {
   var BreakException = {};
@@ -836,6 +838,27 @@ exports.CityBuilder = class {
       length = length + edge_length;
     })
     return length;
+  }
+
+  add_buildings(lot) {
+    let buildings = []
+    lot.forEach((edge) => {
+      const length = distance_between(edge.geometry.start.x,
+                                      edge.geometry.start.y,
+                                      edge.geometry.end.x,
+                                      edge.geometry.end.y)
+      let start = 0
+      let end = 20
+      do {
+        const building = add_building(lot, edge, start, end)
+        if (!intersects(building, buildings)) {
+          buildings = buildings.concat(building)
+        }
+        start = end + 1
+        end += 20
+      } while(end <= length);
+    })
+    return buildings;
   }
 
   get_square(x, y) {

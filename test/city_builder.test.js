@@ -919,29 +919,6 @@ it('adds a building to the lot', async() => {
     }
   ]
   let buildings = []
-  // let offset = 11
-  // let cumulative_offset = offset
-  // lot.forEach((edge) => {
-  //   let build = add_building(lot, edge, offset);
-  //   if (!intersects(build.building, buildings)) {
-  //     buildings = buildings.concat(build.building)                                              
-  //   }
-  //   while (true) {
-  //     if (cumulative_offset >= distance_between(edge.geometry.start.x,
-  //                                               edge.geometry.start.y,
-  //                                    edge.geometry.end.x,
-  //                                    edge.geometry.end.y)) {
-  //                                      break;
-  //                                    }
-  //     build = add_building(lot, {geometry: {start: edge.geometry.start,
-  //                                           end:   edge.geometry.end}}, cumulative_offset);
-  //     cumulative_offset += offset
-  //     if (!intersects(build.building, buildings)) {                                      
-  //       buildings = buildings.concat(build.building)
-  //     }
-  //   }
-  // })
-  // buildings = buildings.concat(lot)
   lot.forEach((edge) => {
     const length = distance_between(edge.geometry.start.x,
                                     edge.geometry.start.y,
@@ -981,30 +958,6 @@ it('checks to see if a shape overlaps with any shapes in a list of shapes', () =
 
   ]
   expect(intersects(building, existing)).toEqual(true)
-})
-
-it('deals with another tricksy line', async() => {
-  const line = {
-    "id": 22,
-    "street_id": 3,
-    "geometry": {
-      "start": {
-        "x": 10,
-        "y": 10
-      },
-      "end": {
-        "x": 200,
-        "y": 20
-      }
-    }
-  }
-  let square = [line]
-  for(var i=10; i < 200; i+=10) {
-    const shorten = shorten_line(line, i); 
-    const ral = right_angle_line(shorten, 50);
-    square.push(ral[0])
-  }
-  render_square(square, 250, "tricksy.png");
 })
 
 async function render_square(square, size, filename) {
