@@ -3,6 +3,7 @@ const {CityBuilder,
        right_angle_line,
        inside_lot,
        add_building,
+       intersects,
        distance_between } = require("../src/city_builder.js");
 
 const two_streets = [
@@ -941,10 +942,12 @@ it('adds a building to the lot', async() => {
     }
   ]
   let buildings = []
-  const offset = 20
+  const offset = 41
   lot.forEach((edge) => {
     let build = add_building(lot, edge, offset);
-    buildings = buildings.concat(build.building)                                              
+    if (!intersects(build.building, buildings)) {
+      buildings = buildings.concat(build.building)                                              
+    }
     while (true) {
       if (offset >= distance_between(build.offset.x,
                                      build.offset.y,
@@ -955,11 +958,36 @@ it('adds a building to the lot', async() => {
       build = add_building(lot, {geometry: {start: {x: build.offset.x,
                                                     y: build.offset.y},
                                             end:   edge.geometry.end}}, offset);
-      buildings = buildings.concat(build.building)
+
+      if (!intersects(build.building, buildings)) {                                      
+        buildings = buildings.concat(build.building)
+      }
     }
   })
   buildings = buildings.concat(lot)
   render_square(buildings, 250, "foo.png");
+})
+
+it('checks to see if a shape overlaps with any shapes in a list of shapes', () => {
+  const building = [
+    {geometry: {start: {x:10,  y: 10},
+                end:   {x:100, y: 10}}},
+    {geometry: {start: {x:100, y: 10},
+                end:   {x:100, y: 100}}},
+    {geometry: {start: {x:100, y: 100},
+                end:   {x:10,  y: 10}}}            
+  ]
+
+  const existing = [
+    {geometry: {start: {x:30,  y: 10},
+                end:   {x:130, y: 10}}},
+    {geometry: {start: {x:130, y: 10},
+                end:   {x:130, y: 100}}},
+    {geometry: {start: {x:130, y: 100},
+                end:   {x:30,  y: 10}}}            
+
+  ]
+  expect(intersects(building, existing)).toEqual(true)
 })
 
 async function render_square(square, size, filename) {

@@ -141,7 +141,7 @@ const inside_lot = function(line, lot) {
 exports.inside_lot = inside_lot;
 
 exports.add_building = function(lot, line, offset) {
-  const size = 20
+  const size = offset;
   const magic = 1000
   const waypoint = shorten_line(line, offset)
   const perps = right_angle_line(waypoint, magic)
@@ -182,8 +182,35 @@ exports.add_building = function(lot, line, offset) {
                             end:   {x: waypoint.geometry.start.x,
                                     y: waypoint.geometry.start.y}}})         
 
-  return {building: building, offset: {x: waypoint.geometry.end.x,
-                                       y: waypoint.geometry.end.y}}
+  // Get start of next building
+  const next_building = shorten_line(line, offset + 2)                                 
+  return {building: building, offset: {x: next_building.geometry.end.x,
+                                       y: next_building.geometry.end.y}}
+}
+
+exports.intersects = function(shape, existing) {
+  var BreakException = {};
+  try {
+    shape.forEach((new_line) => {
+      existing.forEach((line) => {
+        const hit = intersect(new_line.geometry.start.x,
+                              new_line.geometry.start.y,
+                              new_line.geometry.end.x,
+                              new_line.geometry.end.y,
+                              line.geometry.start.x,
+                              line.geometry.start.y,
+                              line.geometry.end.x,
+                              line.geometry.end.y)
+        if (hit) {
+          throw BreakException;
+        }                       
+      })
+    })
+  } catch (e) {
+    if (e !== BreakException) throw e;
+    return true;
+  }
+  return false;
 }
 
 exports.CityBuilder = class {
