@@ -94,24 +94,38 @@ const shorten_line = function(line, length) {
 
 exports.shorten_line = shorten_line;
 
-const right_angle_line = function(line, dist) {
+const right_angle_line = function(line, dist, end) {
 
   // From: https://stackoverflow.com/a/17989593/1064619
 
   const angle = Math.atan2(line.geometry.end.y - line.geometry.start.y, 
                            line.geometry.end.x - line.geometry.start.x);
 
+  let plus
+  let minus                           
   // Draw a normal to the line above
-  const plus = {geometry: {start: {x:line.geometry.end.x,
-                                   y:line.geometry.end.y},
-                           end:   {x:Math.floor((-Math.sin(angle) * dist + line.geometry.end.x)),
-                                   y:Math.floor((Math.cos(angle) * dist + line.geometry.end.y))}}}
+  if (end === "start") {
+    plus = {geometry: {start: {x:line.geometry.start.x,
+                               y:line.geometry.start.y},
+                       end:   {x:Math.floor((-Math.sin(angle) * dist + line.geometry.start.x)),
+                               y:Math.floor((Math.cos(angle) * dist + line.geometry.start.y))}}}
 
-  const minus = {geometry: {start: {x:Math.floor((Math.sin(angle) * dist + line.geometry.end.x)),
-                                    y:Math.floor((-Math.cos(angle) * dist + line.geometry.end.y))},
-                            end:  {x:line.geometry.end.x,
-                                   y:line.geometry.end.y}}}
-                                    
+    minus = {geometry: {start: {x:Math.floor((Math.sin(angle) * dist + line.geometry.start.x)),
+                                y:Math.floor((-Math.cos(angle) * dist + line.geometry.start.y))},
+                       end:    {x:line.geometry.start.x,
+                                y:line.geometry.start.y}}}
+
+  } else {
+    plus = {geometry: {start: {x:line.geometry.end.x,
+                               y:line.geometry.end.y},
+                       end:   {x:Math.floor((-Math.sin(angle) * dist + line.geometry.end.x)),
+                               y:Math.floor((Math.cos(angle) * dist + line.geometry.end.y))}}}
+
+    minus = {geometry: {start: {x:Math.floor((Math.sin(angle) * dist + line.geometry.end.x)),
+                                y:Math.floor((-Math.cos(angle) * dist + line.geometry.end.y))},
+                        end:   {x:line.geometry.end.x,
+                                y:line.geometry.end.y}}}
+  }                          
   return [plus, minus];
 }
 
@@ -132,7 +146,7 @@ const inside_lot = function(line, lot) {
         hits.push(hit);
       }
   })
-  if (hits.length > 1) {
+  if (hits.length >= 1) {
     return hits;
   }
   return false;
@@ -143,44 +157,36 @@ exports.inside_lot = inside_lot;
 exports.add_building = function(lot, line, offset) {
   const size = offset;
   const magic = 1000
-  const waypoint = shorten_line(line, offset)
-  const perps = right_angle_line(waypoint, magic)
-  let perp_idx = 0
-  if (inside_lot(perps[perp_idx], lot) === false) {
-    perp_idx = 1
-  }
-  // First line is shortened perps[perp_idx]
+
   let building = []
-  building.push(shorten_line(perps[perp_idx], size))
+
+  const waypoint = shorten_line(line, offset)
+
+  const perps_1 = right_angle_line(waypoint, magic, "start")
+  let perp_1_idx = 0
+  if (inside_lot(perps_1[perp_1_idx], lot) === false) {
+    perp_1_idx = 1
+  }
+
+  // First line is shortened perps[perp_idx]
+  const first_line = shorten_line(perps_1[perp_1_idx], size)
+  building.push(first_line)
+
+
+  const perps_2 = right_angle_line(waypoint, magic)
+  let perp_2_idx = 0
+  if (inside_lot(perps_2[perp_2_idx], lot) === false) {
+    perp_2_idx = 1
+  }
+  const second_line = shorten_line(perps_2[perp_2_idx], size)
+  building.push(second_line)
+
+  building.push({geometry: {start: {x: second_line.geometry.end.x,
+                                    y: second_line.geometry.end.y},
+                            end:   {x: first_line.geometry.end.x,
+                                    y: first_line.geometry.end.y}}})         
 
   // TODO: Check we have not hit another edge of the lot
-
-  // Second line is parallel to lot edge.
-  const parallels = [parallel(waypoint.geometry, size),
-                     parallel(waypoint.geometry, -Math.abs(size))]
-  // Of the two parallel lines we want the one which intersects with the first line
-  if(intersect(parallels[0].geometry.start.x,
-               parallels[0].geometry.start.y,
-               parallels[0].geometry.end.x,
-               parallels[0].geometry.end.y,
-               building[0].geometry.start.x,
-               building[0].geometry.start.y,
-               building[0].geometry.end.x,
-               building[0].geometry.end.y)) {
-    building.push(parallels[0])
-  } else {
-    building.push(parallels[1])
-  }
-  let start;
-  if (building[1].geometry.start.x == building[0].geometry.end.x &&
-      building[1].geometry.start.y == building[0].geometry.end.y) {
-    start = {x: building[1].geometry.end.x, y: building[1].geometry.end.y}
-  } else {
-    start = {x: building[1].geometry.start.x, y: building[1].geometry.start.y}
-  }        
-  building.push({geometry: {start: start,
-                            end:   {x: waypoint.geometry.start.x,
-                                    y: waypoint.geometry.start.y}}})         
 
   // Get start of next building
   const next_building = shorten_line(line, offset + 2)                                 

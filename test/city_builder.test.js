@@ -942,7 +942,7 @@ it('adds a building to the lot', async() => {
     }
   ]
   let buildings = []
-  const offset = 41
+  const offset = 11
   lot.forEach((edge) => {
     let build = add_building(lot, edge, offset);
     if (!intersects(build.building, buildings)) {
