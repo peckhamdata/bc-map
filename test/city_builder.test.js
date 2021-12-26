@@ -786,10 +786,11 @@ it('finds a point N pixels along a line', async () => {
 })
 
 it('makes a line at a right angle to this one', async () => {
-  const line = { geometry: {start: {x: 0, y: 0}, end: {x: 32, y: 38 }}}                         
-  const expected = [{"geometry":{"start":{"x":32,"y":38},"end":{"x":-7,"y":70}}},{"geometry":{"start":{"x":70,"y":5},"end":{"x":32,"y":38}}}]
-  const actual = right_angle_line(line, 50);
+  const line = { geometry: {start: {x: 0, y: 0}, end: {x: 132, y: 138 }}}                         
+  const expected = [{"geometry":{"start":{"x":48,"y":50},"end":{"x":33,"y":63}}},{"geometry":{"start":{"x":62,"y":36},"end":{"x":48,"y":50}}}]
+  let actual = right_angle_line(line, 20, 70);
   expect(actual).toEqual(expected);
+
 })
 
 it('sees if right angle line interects with a lot edge', () => {
@@ -852,8 +853,7 @@ it('sees if right angle line interects with a lot edge', () => {
     }
   ]
 
-  const waypoint = shorten_line(lot[0], 50)
-  const perps = right_angle_line(waypoint, 100)
+  const perps = right_angle_line(lot[0], 1000, 50)
   expect(inside_lot(perps[0], lot)).toBeTruthy();
   expect(inside_lot(perps[1], lot)).toEqual(false);
 })
@@ -904,7 +904,7 @@ it('adds a building to the lot', async() => {
       }
     },
     {
-      "id": 11,
+      "id": 12,
       "street_id": 1,
       "geometry": {
         "start": {
@@ -919,29 +919,45 @@ it('adds a building to the lot', async() => {
     }
   ]
   let buildings = []
-  const offset = 11
+  // let offset = 11
+  // let cumulative_offset = offset
+  // lot.forEach((edge) => {
+  //   let build = add_building(lot, edge, offset);
+  //   if (!intersects(build.building, buildings)) {
+  //     buildings = buildings.concat(build.building)                                              
+  //   }
+  //   while (true) {
+  //     if (cumulative_offset >= distance_between(edge.geometry.start.x,
+  //                                               edge.geometry.start.y,
+  //                                    edge.geometry.end.x,
+  //                                    edge.geometry.end.y)) {
+  //                                      break;
+  //                                    }
+  //     build = add_building(lot, {geometry: {start: edge.geometry.start,
+  //                                           end:   edge.geometry.end}}, cumulative_offset);
+  //     cumulative_offset += offset
+  //     if (!intersects(build.building, buildings)) {                                      
+  //       buildings = buildings.concat(build.building)
+  //     }
+  //   }
+  // })
+  // buildings = buildings.concat(lot)
   lot.forEach((edge) => {
-    let build = add_building(lot, edge, offset);
-    if (!intersects(build.building, buildings)) {
-      buildings = buildings.concat(build.building)                                              
-    }
-    while (true) {
-      if (offset >= distance_between(build.offset.x,
-                                     build.offset.y,
-                                     edge.geometry.end.x,
-                                     edge.geometry.end.y)) {
-                                       break;
-                                     }
-      build = add_building(lot, {geometry: {start: {x: build.offset.x,
-                                                    y: build.offset.y},
-                                            end:   edge.geometry.end}}, offset);
-
-      if (!intersects(build.building, buildings)) {                                      
-        buildings = buildings.concat(build.building)
+    const length = distance_between(edge.geometry.start.x,
+                                    edge.geometry.start.y,
+                                    edge.geometry.end.x,
+                                    edge.geometry.end.y)
+    let start = 0
+    let end = 20
+    do {
+      const building = add_building(lot, edge, start, end)
+      if (!intersects(building, buildings)) {
+        buildings = buildings.concat(building)
       }
-    }
+      start = end + 1
+      end += 20
+    } while(end <= length);
   })
-  buildings = buildings.concat(lot)
   render_square(buildings, 250, "foo.png");
 })
 
@@ -967,16 +983,40 @@ it('checks to see if a shape overlaps with any shapes in a list of shapes', () =
   expect(intersects(building, existing)).toEqual(true)
 })
 
+it('deals with another tricksy line', async() => {
+  const line = {
+    "id": 22,
+    "street_id": 3,
+    "geometry": {
+      "start": {
+        "x": 10,
+        "y": 10
+      },
+      "end": {
+        "x": 200,
+        "y": 20
+      }
+    }
+  }
+  let square = [line]
+  for(var i=10; i < 200; i+=10) {
+    const shorten = shorten_line(line, i); 
+    const ral = right_angle_line(shorten, 50);
+    square.push(ral[0])
+  }
+  render_square(square, 250, "tricksy.png");
+})
+
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
   const bresenham = require("bresenham");
-  var colour = {red:   Math.floor(Math.random() * 255), 
-    green: Math.floor(Math.random() * 255),
-    blue:  Math.floor(Math.random() * 255)};
 
   var plotter = new hp.JimpPlotter(filename, size, size);
   await plotter.init(() => {
     square.forEach(line => {
+      var colour = {red:   Math.floor(Math.random() * 255), 
+        green: Math.floor(Math.random() * 255),
+        blue:  Math.floor(Math.random() * 255)};
       var points = bresenham(line.geometry.start.x,
         line.geometry.start.y,
         line.geometry.end.x,
