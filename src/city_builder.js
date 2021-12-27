@@ -112,9 +112,9 @@ const right_angle_line = function(line, dist, position) {
                              y:Math.floor((Math.cos(angle) * dist + offset.geometry.end.y))}}}
 
   minus = {line_id: line.id,
-           geometry: {start: {x:Math.floor((Math.sin(angle) * dist + offset.geometry.end.x)),
+           geometry: {end:   {x:Math.floor((Math.sin(angle) * dist + offset.geometry.end.x)),
                               y:Math.floor((-Math.cos(angle) * dist + offset.geometry.end.y))},
-                       end:  {x:offset.geometry.end.x,
+                      start: {x:offset.geometry.end.x,
                               y:offset.geometry.end.y}}}
 
   return [plus, minus];
@@ -193,7 +193,7 @@ const add_building = function(lot, edge, from, to) {
 
 exports.add_building = add_building
 
-exports.intersects = function(shape, existing) {
+const intersects = function(shape, existing) {
   var BreakException = {};
   try {
     shape.forEach((new_line) => {
@@ -217,6 +217,8 @@ exports.intersects = function(shape, existing) {
   }
   return false;
 }
+
+exports.intersects = intersects
 
 exports.CityBuilder = class {
   constructor(seed, num_curves, scale) {

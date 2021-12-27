@@ -960,6 +960,109 @@ it('checks to see if a shape overlaps with any shapes in a list of shapes', () =
   expect(intersects(building, existing)).toEqual(true)
 })
 
+it('deals with this one found in the wild', async() => {
+  const scale = 1
+  const lot = {
+    "lot_id": 30930,
+    "lot_length": 2313,
+    "edges": [
+      {
+        "id": 9907,
+        "street_id": 376,
+        "geometry": {
+          "start": {
+            "x": Math.floor(992 / scale),
+            "y": Math.floor(413 / scale)
+          },
+          "end": {
+            "x": Math.floor(1846 / scale),
+            "y": Math.floor(882 / scale)
+          }
+        }
+      },
+      {
+        "id": 9842,
+        "street_id": 375,
+        "geometry": {
+          "start": {
+            "x": Math.floor(1846 / scale),
+            "y": Math.floor(882 / scale)
+          },
+          "end": {
+            "x": Math.floor(1950 / scale),
+            "y": Math.floor(981 / scale)
+          }
+        }
+      },
+      {
+        "id": 9443,
+        "street_id": 357,
+        "geometry": {
+          "start": {
+            "x": Math.floor(1093 / scale),
+            "y": Math.floor(588 / scale)
+          },
+          "end": {
+            "x": Math.floor(1950 / scale),
+            "y": Math.floor(981 / scale)
+          }
+        }
+      },
+      {
+        "id": 9346,
+        "street_id": 356,
+        "geometry": {
+          "start": {
+            "x": Math.floor(951 / scale),
+            "y": Math.floor(473 / scale)
+          },
+          "end": {
+            "x": Math.floor(1093 / scale),
+            "y": Math.floor(588 / scale)
+          }
+        }
+      },
+      {
+        "id": 1519,
+        "street_id": 74,
+        "geometry": {
+          "start": {
+            "x": Math.floor(992 / scale),
+            "y": Math.floor(413 / scale)
+          },
+          "end": {
+            "x": Math.floor(951 / scale),
+            "y": Math.floor(473 / scale)
+          }
+        }
+      }
+    ]
+  }
+
+  const seed = 1024
+  const num_curves = 16
+  const city_builder = new CityBuilder(seed, num_curves);
+  console.log(JSON.stringify(lot.edges[2]))
+  const buildings = add_building(lot.edges, lot.edges[2], 100, 120)
+  const lines = right_angle_line(lot.edges[2], 1000, 0);
+  console.log("right angles:" + JSON.stringify(lines))
+  const hits = inside_lot(lines[1], lot.edges)
+
+  // Shorten line so it fits inside lot
+  let length = distance_between(lines[1].geometry.start.x,
+                                lines[1].geometry.start.y,      
+                                hits[0].x,
+                                hits[0].y) / 4
+  console.log(hits)
+  console.log(length)
+  const short_line = shorten_line(lines[1], length)
+  console.log(short_line)
+  render_square(lot.edges.concat(short_line), 2000, "wild.png");
+
+})
+
+
+
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
   const bresenham = require("bresenham");
