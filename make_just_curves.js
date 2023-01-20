@@ -12,7 +12,7 @@ city_builder.build_bezier_streets();
 
 const hp = require('harry-plotter');
 
-const filename = 'just_curves.png'
+const filename = 'assets/just_curves.png'
 var plotter = new hp.JimpPlotter(filename, 1024, 1024);
 var colour = {red: 0, green: 255, blue: 0};
 const Bezier = require('bezier-js');

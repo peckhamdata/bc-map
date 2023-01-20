@@ -20,6 +20,19 @@ There are different types of streets:
 * `diagonal streets` which cut across the `bezier streets`
 * `cross streets` which are no longer used
 
+If you just make the `bezier` streets the city looks like this:
+
+![Just Bezier Streets](assets/just_curves.png)
+
+These are just used to decide where to put the `diagonal` streets:
+
+![Diagonal Streets](assets/just_diagonals.png)
+
+A Street has two sides to it. These are called `parallels` and are refered to as the `plus`
+and `minus` parallel:
+
+![Parallel Sides](assets/add_parallels.png)
+
 Streets bound `lots`
 
 The [`make_city_lots.js`](make_city_lots.js) script creates the `bezier` and
