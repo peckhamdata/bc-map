@@ -3,6 +3,7 @@ const {CityBuilder,
        right_angle_line,
        inside_lot,
        add_building,
+       add_buildings,
        intersects,
        distance_between } = require("../src/city_builder.js");
 
@@ -860,7 +861,7 @@ it('sees if right angle line interects with a lot edge', () => {
 
 it('adds a building to the lot', async() => {
 
-  let lot = [
+  let lot_edges = [
     {
       "id": 22,
       "street_id": 3,
@@ -919,7 +920,7 @@ it('adds a building to the lot', async() => {
     }
   ]
   let buildings = []
-  lot.forEach((edge) => {
+  lot_edges.forEach((edge) => {
     const length = distance_between(edge.geometry.start.x,
                                     edge.geometry.start.y,
                                     edge.geometry.end.x,
@@ -927,7 +928,7 @@ it('adds a building to the lot', async() => {
     let start = 0
     let end = 20
     do {
-      const building = add_building(lot, edge, start, end)
+      const building = add_building(lot_edges, edge, start, end)
       if (!intersects(building, buildings)) {
         buildings = buildings.concat(building)
       }
@@ -936,6 +937,72 @@ it('adds a building to the lot', async() => {
     } while(end <= length);
   })
   render_square(buildings, 250, "foo.png");
+})
+
+it('adds many buildings to the lot', () => {
+
+  let lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 12,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
+  
+  const buildings = add_buildings(lot)
+  console.log(buildings)
+
 })
 
 it('checks to see if a shape overlaps with any shapes in a list of shapes', () => {

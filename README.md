@@ -61,7 +61,20 @@ The next step is to bind the `lot_edges` together into discreet `lots`:
 
 ![Lots](assets/lots.png)
 
+Note that in this image each lot has a single colour wheras in the `lot_edges` image above
+each edge had its own colour.
 
+Each lot keeps track of the length of its perimiter. The idea behind this was the size of the
+lot could be considered when lazy loading them into a 3D view. That is smaller lots would be
+left unrendered if they were further away from the viewer. This ties in with the `squares`
+which we'll come to in a minute.
+
+Lots contain buildings. The code for adding the buildings is a bit _sus_. It's putting _some_
+of them on the map:
+
+![Buildings](assets/buildings.png)
+
+Working on that :-)
 
 # Copyright
 
