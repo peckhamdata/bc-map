@@ -59,10 +59,8 @@ More work required here.
 
 The next step is to bind the `lot_edges` together into discreet `lots`:
 
+![Lots](assets/lots.png)
 
-
-The [`make_city_lots.js`](make_city_lots.js) script creates the `bezier` and
-`diagonal` streets. 
 
 
 # Copyright
