@@ -866,7 +866,7 @@ it('sees if right angle line interects with a lot edge', () => {
   expect(inside_lot(perps[1], lot)).toEqual(false);
 })
 
-it('adds a building to the lot', async() => {
+it('adds buildings to the lot', async() => {
 
   let lot_edges = [
     {
@@ -943,7 +943,7 @@ it('adds a building to the lot', async() => {
       end += 20
     } while(end <= length);
   })
-  await render_square(buildings, 250, "foo.png");
+  await render_square(buildings, 250, "assets/building_with_lots.png");
 })
 
 // it('adds many buildings to the lot', () => {

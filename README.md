@@ -74,7 +74,15 @@ of them on the map:
 
 ![Buildings](assets/buildings.png)
 
-Working on that :-)
+Working on that :-). The test for adding the buildings can be run with:
+
+```
+test -- -t 'adds buildings to the lot'
+```
+
+Currently it seems to only want to add buildings to one edge of the lot:
+
+![One edge of the lot](assets/building_with_lots.png)
 
 # Copyright
 
