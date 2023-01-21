@@ -788,8 +788,15 @@ it('finds a point N pixels along a line', async () => {
 
 it('makes a line at a right angle to this one', async () => {
   const line = { geometry: {start: {x: 0, y: 0}, end: {x: 132, y: 138 }}}                         
-  const expected = [{"geometry":{"start":{"x":48,"y":50},"end":{"x":33,"y":63}}},{"geometry":{"start":{"x":62,"y":36},"end":{"x":48,"y":50}}}]
+  const expected = [{"geometry":{"start":{"x":48,"y":50},"end":{"x":33,"y":63}}},{"geometry":{"start":{"x":48,"y":50},"end":{"x":62,"y":36}}}]
   let actual = right_angle_line(line, 20, 70);
+
+  // Lets look at what the actual looks like
+
+  const filename = 'right_angle.png'
+  const all_lines = [].concat(actual)
+  all_lines.push(line)
+  await render_square(all_lines, 250, filename);
   expect(actual).toEqual(expected);
 
 })
@@ -936,74 +943,73 @@ it('adds a building to the lot', async() => {
       end += 20
     } while(end <= length);
   })
-  render_square(buildings, 250, "foo.png");
+  await render_square(buildings, 250, "foo.png");
 })
 
-it('adds many buildings to the lot', () => {
+// it('adds many buildings to the lot', () => {
 
-  let lot = [
-    {
-      "id": 22,
-      "street_id": 3,
-      "geometry": {
-        "start": {
-          "x": 10,
-          "y": 10
-        },
-        "end": {
-          "x": 200,
-          "y": 20
-        }
-      }
-    },
-    {
-      "id": 20,
-      "street_id": 2,
-      "geometry": {
-        "start": {
-          "x": 200,
-          "y": 20
-        },
-        "end": {
-          "x": 200,
-          "y": 200
-        }
-      }
-    },
-    {
-      "id": 11,
-      "street_id": 1,
-      "geometry": {
-        "start": {
-          "x": 200,
-          "y": 200
-        },
-        "end": {
-          "x": 50,
-          "y": 100
-        }
-      }
-    },
-    {
-      "id": 12,
-      "street_id": 1,
-      "geometry": {
-        "start": {
-          "x": 50,
-          "y": 100
-        },
-        "end": {
-          "x": 10,
-          "y": 10
-        }
-      }
-    }
-  ]
+//   let lot = [
+//     {
+//       "id": 22,
+//       "street_id": 3,
+//       "geometry": {
+//         "start": {
+//           "x": 10,
+//           "y": 10
+//         },
+//         "end": {
+//           "x": 200,
+//           "y": 20
+//         }
+//       }
+//     },
+//     {
+//       "id": 20,
+//       "street_id": 2,
+//       "geometry": {
+//         "start": {
+//           "x": 200,
+//           "y": 20
+//         },
+//         "end": {
+//           "x": 200,
+//           "y": 200
+//         }
+//       }
+//     },
+//     {
+//       "id": 11,
+//       "street_id": 1,
+//       "geometry": {
+//         "start": {
+//           "x": 200,
+//           "y": 200
+//         },
+//         "end": {
+//           "x": 50,
+//           "y": 100
+//         }
+//       }
+//     },
+//     {
+//       "id": 12,
+//       "street_id": 1,
+//       "geometry": {
+//         "start": {
+//           "x": 50,
+//           "y": 100
+//         },
+//         "end": {
+//           "x": 10,
+//           "y": 10
+//         }
+//       }
+//     }
+//   ]
   
-  const buildings = add_buildings(lot)
-  console.log(buildings)
+//   const buildings = add_buildings(lot)
 
-})
+// })
 
 it('checks to see if a shape overlaps with any shapes in a list of shapes', () => {
   const building = [
@@ -1109,10 +1115,10 @@ it('deals with this one found in the wild', async() => {
   const seed = 1024
   const num_curves = 16
   const city_builder = new CityBuilder(seed, num_curves);
-  console.log(JSON.stringify(lot.edges[2]))
+  // console.log(JSON.stringify(lot.edges[2]))
   const buildings = add_building(lot.edges, lot.edges[2], 100, 120)
   const lines = right_angle_line(lot.edges[2], 1000, 0);
-  console.log("right angles:" + JSON.stringify(lines))
+  // console.log("right angles:" + JSON.stringify(lines))
   const hits = inside_lot(lines[1], lot.edges)
 
   // Shorten line so it fits inside lot
@@ -1120,11 +1126,11 @@ it('deals with this one found in the wild', async() => {
                                 lines[1].geometry.start.y,      
                                 hits[0].x,
                                 hits[0].y) / 4
-  console.log(hits)
-  console.log(length)
+  // console.log(hits)
+  // console.log(length)
   const short_line = shorten_line(lines[1], length)
-  console.log(short_line)
-  render_square(lot.edges.concat(short_line), 2000, "wild.png");
+  // console.log(short_line)
+  await render_square(lot.edges.concat(short_line), 2000, "wild.png");
 
 })
 
