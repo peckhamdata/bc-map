@@ -37,7 +37,29 @@ When two streets meet it creates a `junction`:
 
 ![Junctions](assets/add_junctions.png)
 
-Streets bound `lots`
+We want to know where the intersection of the two `parallels` of a street occur so we can
+stop rendering the parallel street edge when it hits that of another. We then use this 
+information to split the existing long streets into shorter streets.
+
+The code here is a bit _bruh_. You have to call three functions in order for it to work.
+Needs some TLC:
+
+```
+city_builder.add_junctions();
+city_builder.intersect_parallels();
+city_builder.split_streets();
+```
+
+`split_streets` is not very well named as it doesn't actually split the streets.
+Rather it creates `lot_edges` which when put together create `lots` which are the
+bounded areas of real estate made up from the result of splitting the streets. 
+More work required here.
+
+![Lot Edges](assets/lot_edges.png)
+
+The next step is to bind the `lot_edges` together into discreet `lots`:
+
+
 
 The [`make_city_lots.js`](make_city_lots.js) script creates the `bezier` and
 `diagonal` streets. 
