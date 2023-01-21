@@ -33,12 +33,15 @@ and `minus` parallel:
 
 ![Parallel Sides](assets/add_parallels.png)
 
+When two streets meet it creates a `junction`:
+
+![Junctions](assets/add_junctions.png)
+
 Streets bound `lots`
 
 The [`make_city_lots.js`](make_city_lots.js) script creates the `bezier` and
 `diagonal` streets. 
 
-TODO: What does adding junctions do?
 
 # Copyright
 
