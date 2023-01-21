@@ -33,7 +33,7 @@ and `minus` parallel:
 
 ![Parallel Sides](assets/add_parallels.png)
 
-When two streets meet it creates a `junction`:
+When two streets meet it creates a `junction`. These are the red dots in the image below:
 
 ![Junctions](assets/add_junctions.png)
 
