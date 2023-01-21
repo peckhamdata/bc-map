@@ -40,6 +40,6 @@ The [`make_city_lots.js`](make_city_lots.js) script creates the `bezier` and
 
 TODO: What does adding junctions do?
 
+# Copyright
 
-
-
+(C) Copyright 2023 Peckham Data Centre Ltd. All rights reserved.
