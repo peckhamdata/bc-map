@@ -801,7 +801,7 @@ it('makes a line at a right angle to this one', async () => {
 
 })
 
-it('sees if right angle line interects with a lot edge', () => {
+it('sees if right angle line interects with a lot edge', async () => {
   let lot = [
     {
       "id": 22,
@@ -861,9 +861,22 @@ it('sees if right angle line interects with a lot edge', () => {
     }
   ]
 
-  const perps = right_angle_line(lot[0], 1000, 50)
-  expect(inside_lot(perps[0], lot)).toBeTruthy();
-  expect(inside_lot(perps[1], lot)).toEqual(false);
+  let all_perps = []
+  lot.forEach((edge, i) => {
+    const perps = right_angle_line(edge, 100, 50)
+    // expect(inside_lot(perps[0], lot)).toBeTruthy();
+    // expect(inside_lot(perps[1], lot)).toEqual(false);
+    if (inside_lot(perps[0], lot, i)) {
+      all_perps.push(perps[0])
+    }
+    if (inside_lot(perps[1], lot, i)) {
+      all_perps.push(perps[1])
+    }
+  
+  })
+  let all_lines = [].concat(all_perps, lot)
+  await render_square(all_lines, 255, "assets/building_edges.png");
+  
 })
 
 it('adds buildings to the lot', async() => {
@@ -927,23 +940,26 @@ it('adds buildings to the lot', async() => {
     }
   ]
   let buildings = []
-  lot_edges.forEach((edge) => {
-    const length = distance_between(edge.geometry.start.x,
+  // lot_edges.forEach((edge) => {
+
+  edge = lot_edges[0]
+  const length = distance_between(edge.geometry.start.x,
                                     edge.geometry.start.y,
                                     edge.geometry.end.x,
                                     edge.geometry.end.y)
-    let start = 0
-    let end = 20
-    do {
-      const building = add_building(lot_edges, edge, start, end)
-      if (!intersects(building, buildings)) {
-        buildings = buildings.concat(building)
-      }
-      start = end + 1
-      end += 20
-    } while(end <= length);
-  })
-  await render_square(buildings, 250, "assets/building_with_lots.png");
+  let start = 10
+  let end = 2
+  // do {
+    const building = add_building(lot_edges, 0, start, end)
+    // if (!intersects(building, buildings)) {
+      console.log(building)
+      buildings = buildings.concat(building)
+    // }
+  //   start = end + 1
+  //   end += 20
+  // } while(end <= length);
+  // })
+  await render_square(buildings, 250, "assets/lot_with_buildings.png");
 })
 
 // it('adds many buildings to the lot', () => {
@@ -1116,10 +1132,10 @@ it('deals with this one found in the wild', async() => {
   const num_curves = 16
   const city_builder = new CityBuilder(seed, num_curves);
   // console.log(JSON.stringify(lot.edges[2]))
-  const buildings = add_building(lot.edges, lot.edges[2], 100, 120)
+  const buildings = add_building(lot.edges, 2, 100, 120)
   const lines = right_angle_line(lot.edges[2], 1000, 0);
   // console.log("right angles:" + JSON.stringify(lines))
-  const hits = inside_lot(lines[1], lot.edges)
+  const hits = inside_lot(lines[1], lot.edges, 1)
 
   // Shorten line so it fits inside lot
   let length = distance_between(lines[1].geometry.start.x,

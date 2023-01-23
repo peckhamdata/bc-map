@@ -120,22 +120,29 @@ const right_angle_line = function(line, dist, position) {
 
 exports.right_angle_line = right_angle_line;
 
-const inside_lot = function(line, lot) {
+const inside_lot = function(line, lot, edge_index) {
   let hits = [];
-  lot.forEach((edge) => {
-    const hit = intersect(line.geometry.start.x,
-      line.geometry.start.y,
-      line.geometry.end.x,
-      line.geometry.end.y,
-      edge.geometry.start.x,
-      edge.geometry.start.y,
-      edge.geometry.end.x,
-      edge.geometry.end.y);
-      if(hit) {
-        if (line.line_id !== edge.id) { 
-          hits.push(hit);
+  lot.forEach((edge, i) => {
+    if (i !== edge_index) {
+      // Don't try to test intersection with the edge
+      // the line started at :-)
+      console.log('line:' + JSON.stringify(line))
+      console.log('edge:' + JSON.stringify(edge))
+      console.log('idx :' + i)
+      const hit = intersect(line.geometry.start.x,
+        line.geometry.start.y,
+        line.geometry.end.x,
+        line.geometry.end.y,
+        edge.geometry.start.x,
+        edge.geometry.start.y,
+        edge.geometry.end.x,
+        edge.geometry.end.y);
+        if(hit) {
+          if (line.line_id !== edge.id) { 
+            hits.push(hit);
+          }
         }
-      }
+    }
   })
   if (hits.length >= 1) {
     return hits;
@@ -145,53 +152,70 @@ const inside_lot = function(line, lot) {
 
 exports.inside_lot = inside_lot;
 
-const add_building = function(lot, edge, from, to) {
-  let size = 20
-  const magic = 1000
+const add_building = function(lot_edges, edge_index, from, to) {
+  // let size = 20
+  const magic = 1000 // Far off distance for end of right angle line
 
   let building = []
 
-  // Get first right angle from lot edge
-  let perps = right_angle_line(edge, magic, from)
- 
-  // Which one is inside lot?
+  // Attempt to draw the edge of a building as a right angle
+  // from the edge of the lot
+
+  let perps = right_angle_line(lot_edges[edge_index], magic, from)
+  console.log('right angle lines from lot edge:' + perps)
+  // Find out which of the two right angle lines
+  // is heading inside the lot?
   let perp_idx = 0
-  let hits = inside_lot(perps[0], lot)
+  let hits = inside_lot(perps[0], lot_edges, edge_index)
   if( hits === false) {
+    console.log('line is outside lot')
     perp_idx = 1
-    hits = inside_lot(perps[1], lot)
+    hits = inside_lot(perps[1], lot_edges, edge_index)
+  } else {
+    console.log('line is inside lot')
   }
-
-  // Shorten line so it fits inside lot
-  let length = distance_between(perps[perp_idx].geometry.start.x,
-                                perps[perp_idx].geometry.start.y,      
-                                hits[0].x,
-                                hits[0].y) / 4
-  building.push(shorten_line(perps[perp_idx], length))
-  // Get second right angle from lot edge
-
-  perps = right_angle_line(edge, magic, to)
- 
-  // Which one is inside lot?
-  perp_idx = 0
-  hits = inside_lot(perps[0], lot)
-  if( hits === false) {
-    perp_idx = 1
-    hits = inside_lot(perps[1], lot)
-  }
+  // building.push(perps[perp_idx])
+  let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
+  console.log('first_line:' + JSON.stringify(first_line))
+  // // Shorten line so it fits inside lot
+  building.push(first_line)
+  // console.log(first_line.geometry.start.x,
+  //             first_line.geometry.start.y,      
+  //             hits[0].x,
+  //             hits[0].y)
   
-  // Shorten line so it fits inside lot
-  building.push(shorten_line(perps[perp_idx], length))
-  building.push({geometry: {start: building[0].geometry.end,
-                            end:   building[1].geometry.end}})  
-  // Join them together
+  // let length = distance_between(first_line.geometry.start.x,
+  //                               first_line.geometry.start.y,      
+  //                               hits[0].x,
+  //                               hits[0].y) / 4
+
+  // console.log(JSON.stringify(perps))
+  // building.push(shorten_line(perps[perp_idx], length))
+
+  // // Get second right angle from lot edge
+
+  // perps = right_angle_line(lot_edges[edge_index], magic, to)
+ 
+  // // Which one is inside lot?
+  // perp_idx = 0
+  // hits = inside_lot(perps[0], lot_edges, edge_index)
+  // if( hits === false) {
+  //   perp_idx = 1
+  //   hits = inside_lot(perps[1], lot_edges, edge_index)
+  // }
+  
+  // // Shorten line so it fits inside lot
+  // building.push(shorten_line(perps[perp_idx], length))
+  // building.push({geometry: {start: building[0].geometry.end,
+  //                           end:   building[1].geometry.end}})  
+  // // Join them together
 
   return building
 }
 
 exports.add_building = add_building
 
-const add_buildings = function(lot) {
+const add_buildings = function(lot, size) {
   let buildings = []
   lot.edges.forEach((edge) => {
     const length = distance_between(edge.geometry.start.x,
@@ -199,14 +223,14 @@ const add_buildings = function(lot) {
                                     edge.geometry.end.x,
                                     edge.geometry.end.y)
     let start = 0
-    let end = 20
+    let end = size
     do {
       const building = add_building(lot.edges, edge, start, end)
       if (!intersects(building, buildings)) {
         buildings = buildings.concat(building)
       }
       start = end + 1
-      end += 20
+      end += size
     } while(end <= length);
   })
   return buildings;
