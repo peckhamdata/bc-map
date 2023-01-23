@@ -16,11 +16,16 @@ city_builder.intersect_parallels();
 city_builder.split_streets();
 city_builder.add_lots();
 
-const building_size = 20;
+const building_size = 5;
 
 city_builder.lots.forEach(lot => {
-    buildings = add_buildings(lot, building_size)
-    lot.buildings = buildings
+    try {
+        buildings = add_buildings(lot.edges, building_size)
+        lot.buildings = buildings
+    }
+    catch (err){
+        console.log(err)
+    }
 })
 
 const hp = require('harry-plotter');

@@ -153,93 +153,102 @@ const inside_lot = function(line, lot, edge_index) {
 exports.inside_lot = inside_lot;
 
 const add_building = function(lot_edges, edge_index, from, to) {
-  // let size = 20
-  const magic = 1000 // Far off distance for end of right angle line
+  try {
+    // let size = 20
+    const magic = 1000 // Far off distance for end of right angle line
 
-  let building = []
+    let building = []
 
-  // Attempt to draw the edge of a building as a right angle
-  // from the edge of the lot
+    // Attempt to draw the edge of a building as a right angle
+    // from the edge of the lot
 
-  let perps = right_angle_line(lot_edges[edge_index], magic, from)
-  console.log('right angle lines from lot edge:' + perps)
-  // Find out which of the two right angle lines
-  // is heading inside the lot?
-  let perp_idx = 0
-  let hits = inside_lot(perps[0], lot_edges, edge_index)
-  if( hits === false) {
-    console.log('line is outside lot')
-    perp_idx = 1
-    hits = inside_lot(perps[1], lot_edges, edge_index)
-  } else {
-    console.log('line is inside lot')
-  }
-  // building.push(perps[perp_idx])
-  let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-  console.log('first_line:' + JSON.stringify(first_line))
-  // // Shorten line so it fits inside lot
-  // building.push(first_line)
-  // console.log(first_line.geometry.start.x,
-  //             first_line.geometry.start.y,      
-  //             hits[0].x,
-  //             hits[0].y)
+    let perps = right_angle_line(lot_edges[edge_index], magic, from)
+    console.log('right angle lines from lot edge:' + perps)
+    // Find out which of the two right angle lines
+    // is heading inside the lot?
+    let perp_idx = 0
+    let hits = inside_lot(perps[0], lot_edges, edge_index)
+    if( hits === false) {
+      console.log('line is outside lot')
+      perp_idx = 1
+      hits = inside_lot(perps[1], lot_edges, edge_index)
+    } else {
+      console.log('line is inside lot')
+    }
+    // building.push(perps[perp_idx])
+    let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
+    console.log('first_line:' + JSON.stringify(first_line))
+    // // Shorten line so it fits inside lot
+    // building.push(first_line)
+    // console.log(first_line.geometry.start.x,
+    //             first_line.geometry.start.y,      
+    //             hits[0].x,
+    //             hits[0].y)
+    
+    let length = distance_between(first_line.geometry.start.x,
+                                  first_line.geometry.start.y,      
+                                  first_line.geometry.end.x,
+                                  first_line.geometry.end.y) / 4
+
+    building.push(shorten_line(first_line, length))
+
+    // Get second right angle from lot edge
+
+    perps = right_angle_line(lot_edges[edge_index], magic, to)
   
-  let length = distance_between(first_line.geometry.start.x,
-                                first_line.geometry.start.y,      
-                                first_line.geometry.end.x,
-                                first_line.geometry.end.y) / 4
+    // Which one is inside lot?
+    perp_idx = 0
+    hits = inside_lot(perps[0], lot_edges, edge_index)
+    if( hits === false) {
+      perp_idx = 1
+      hits = inside_lot(perps[1], lot_edges, edge_index)
+    }
 
-  building.push(shorten_line(first_line, length))
+    let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
 
-  // Get second right angle from lot edge
+    length = distance_between(second_line.geometry.start.x,
+      second_line.geometry.start.y,      
+      second_line.geometry.end.x,
+      second_line.geometry.end.y) / 4
 
-  perps = right_angle_line(lot_edges[edge_index], magic, to)
- 
-  // Which one is inside lot?
-  perp_idx = 0
-  hits = inside_lot(perps[0], lot_edges, edge_index)
-  if( hits === false) {
-    perp_idx = 1
-    hits = inside_lot(perps[1], lot_edges, edge_index)
+    building.push(shorten_line(second_line, length))
+
+    // Join them together
+
+    building.push({geometry: {start: building[0].geometry.end,
+                              end:   building[1].geometry.end}})  
+
+    return building
   }
-
-  let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-
-  length = distance_between(second_line.geometry.start.x,
-    second_line.geometry.start.y,      
-    second_line.geometry.end.x,
-    second_line.geometry.end.y) / 4
-
-  building.push(shorten_line(second_line, length))
-
-  // Join them together
-
-  building.push({geometry: {start: building[0].geometry.end,
-                            end:   building[1].geometry.end}})  
-
-  return building
+  catch(err) {
+    console.log(err + 'processing' + JSON.stringify(lot_edges))
+  } 
 }
 
 exports.add_building = add_building
 
-const add_buildings = function(lot, size) {
+const add_buildings = function(lot_edges, size) {
   let buildings = []
-  lot.edges.forEach((edge) => {
+
+  lot_edges.forEach((edge, i) => {
+
     const length = distance_between(edge.geometry.start.x,
-                                    edge.geometry.start.y,
-                                    edge.geometry.end.x,
-                                    edge.geometry.end.y)
-    let start = 0
+                                      edge.geometry.start.y,
+                                      edge.geometry.end.x,
+                                      edge.geometry.end.y)
+    let start = 10
     let end = size
     do {
-      const building = add_building(lot.edges, edge, start, end)
+      const building = add_building(lot_edges, i, start, end)
       if (!intersects(building, buildings)) {
         buildings = buildings.concat(building)
       }
       start = end + 1
-      end += size
+      end += 20
     } while(end <= length);
+
   })
+
   return buildings;
 }
 

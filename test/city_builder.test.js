@@ -961,70 +961,71 @@ it('adds buildings to the lot', async() => {
   await render_square(buildings, 250, "assets/lot_with_buildings.png");
 })
 
-// it('adds many buildings to the lot', () => {
+it('adds many buildings to the lot', async() => {
 
-//   let lot = [
-//     {
-//       "id": 22,
-//       "street_id": 3,
-//       "geometry": {
-//         "start": {
-//           "x": 10,
-//           "y": 10
-//         },
-//         "end": {
-//           "x": 200,
-//           "y": 20
-//         }
-//       }
-//     },
-//     {
-//       "id": 20,
-//       "street_id": 2,
-//       "geometry": {
-//         "start": {
-//           "x": 200,
-//           "y": 20
-//         },
-//         "end": {
-//           "x": 200,
-//           "y": 200
-//         }
-//       }
-//     },
-//     {
-//       "id": 11,
-//       "street_id": 1,
-//       "geometry": {
-//         "start": {
-//           "x": 200,
-//           "y": 200
-//         },
-//         "end": {
-//           "x": 50,
-//           "y": 100
-//         }
-//       }
-//     },
-//     {
-//       "id": 12,
-//       "street_id": 1,
-//       "geometry": {
-//         "start": {
-//           "x": 50,
-//           "y": 100
-//         },
-//         "end": {
-//           "x": 10,
-//           "y": 10
-//         }
-//       }
-//     }
-//   ]
+  let lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 12,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
   
-//   const buildings = add_buildings(lot)
+  const buildings = add_buildings(lot, 10)
+  await render_square(buildings, 250, "assets/lot_with_many_buildings.png");
 
-// })
+})
 
 it('checks to see if a shape overlaps with any shapes in a list of shapes', () => {
   const building = [

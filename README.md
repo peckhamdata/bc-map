@@ -74,15 +74,14 @@ of them on the map:
 
 ![Buildings](assets/buildings.png)
 
-Working on that :-). The test for adding the buildings can be run with:
+But some of the lots remain empty :-O Working on that :-). The test for adding the buildings can be run with:
 
 ```
-test -- -t 'adds buildings to the lot'
+npm test -- -t 'adds buildings to the lot'
 ```
 
-Currently it seems to only want to add buildings to one edge of the lot:
-
-![One edge of the lot](assets/building_with_lots.png)
+I've put some error handling around the call to `add_buildings` so I can test the lots where this fails and 
+see what it is about these `in the wild` lots that causes my code to fail :-)
 
 # Copyright
 
