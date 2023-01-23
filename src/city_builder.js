@@ -178,21 +178,20 @@ const add_building = function(lot_edges, edge_index, from, to) {
   let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
   console.log('first_line:' + JSON.stringify(first_line))
   // // Shorten line so it fits inside lot
-  building.push(first_line)
+  // building.push(first_line)
   // console.log(first_line.geometry.start.x,
   //             first_line.geometry.start.y,      
   //             hits[0].x,
   //             hits[0].y)
   
-  // let length = distance_between(first_line.geometry.start.x,
-  //                               first_line.geometry.start.y,      
-  //                               hits[0].x,
-  //                               hits[0].y) / 4
+  let length = distance_between(first_line.geometry.start.x,
+                                first_line.geometry.start.y,      
+                                first_line.geometry.end.x,
+                                first_line.geometry.end.y) / 4
 
-  // console.log(JSON.stringify(perps))
-  // building.push(shorten_line(perps[perp_idx], length))
+  building.push(shorten_line(first_line, length))
 
-  // // Get second right angle from lot edge
+  // Get second right angle from lot edge
 
   perps = right_angle_line(lot_edges[edge_index], magic, to)
  
@@ -205,9 +204,13 @@ const add_building = function(lot_edges, edge_index, from, to) {
   }
 
   let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-  building.push(second_line)
-  // // Shorten line so it fits inside lot
-  // building.push(shorten_line(perps[perp_idx], length))
+
+  length = distance_between(second_line.geometry.start.x,
+    second_line.geometry.start.y,      
+    second_line.geometry.end.x,
+    second_line.geometry.end.y) / 4
+
+  building.push(shorten_line(second_line, length))
 
   // Join them together
 

@@ -950,10 +950,9 @@ it('adds buildings to the lot', async() => {
     let end = 2
     do {
       const building = add_building(lot_edges, i, start, end)
-      // if (!intersects(building, buildings)) {
-        console.log(building)
+      if (!intersects(building, buildings)) {
         buildings = buildings.concat(building)
-      // }
+      }
       start = end + 1
       end += 20
     } while(end <= length);
