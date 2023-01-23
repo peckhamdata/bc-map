@@ -194,21 +194,25 @@ const add_building = function(lot_edges, edge_index, from, to) {
 
   // // Get second right angle from lot edge
 
-  // perps = right_angle_line(lot_edges[edge_index], magic, to)
+  perps = right_angle_line(lot_edges[edge_index], magic, to)
  
-  // // Which one is inside lot?
-  // perp_idx = 0
-  // hits = inside_lot(perps[0], lot_edges, edge_index)
-  // if( hits === false) {
-  //   perp_idx = 1
-  //   hits = inside_lot(perps[1], lot_edges, edge_index)
-  // }
-  
+  // Which one is inside lot?
+  perp_idx = 0
+  hits = inside_lot(perps[0], lot_edges, edge_index)
+  if( hits === false) {
+    perp_idx = 1
+    hits = inside_lot(perps[1], lot_edges, edge_index)
+  }
+
+  let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
+  building.push(second_line)
   // // Shorten line so it fits inside lot
   // building.push(shorten_line(perps[perp_idx], length))
-  // building.push({geometry: {start: building[0].geometry.end,
-  //                           end:   building[1].geometry.end}})  
-  // // Join them together
+
+  // Join them together
+
+  building.push({geometry: {start: building[0].geometry.end,
+                            end:   building[1].geometry.end}})  
 
   return building
 }

@@ -940,25 +940,25 @@ it('adds buildings to the lot', async() => {
     }
   ]
   let buildings = []
-  // lot_edges.forEach((edge) => {
+  lot_edges.forEach((edge, i) => {
 
-  edge = lot_edges[0]
-  const length = distance_between(edge.geometry.start.x,
-                                    edge.geometry.start.y,
-                                    edge.geometry.end.x,
-                                    edge.geometry.end.y)
-  let start = 10
-  let end = 2
-  // do {
-    const building = add_building(lot_edges, 0, start, end)
-    // if (!intersects(building, buildings)) {
-      console.log(building)
-      buildings = buildings.concat(building)
-    // }
-  //   start = end + 1
-  //   end += 20
-  // } while(end <= length);
-  // })
+    const length = distance_between(edge.geometry.start.x,
+                                      edge.geometry.start.y,
+                                      edge.geometry.end.x,
+                                      edge.geometry.end.y)
+    let start = 10
+    let end = 2
+    do {
+      const building = add_building(lot_edges, i, start, end)
+      // if (!intersects(building, buildings)) {
+        console.log(building)
+        buildings = buildings.concat(building)
+      // }
+      start = end + 1
+      end += 20
+    } while(end <= length);
+
+  })
   await render_square(buildings, 250, "assets/lot_with_buildings.png");
 })
 
