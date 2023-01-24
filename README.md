@@ -83,6 +83,13 @@ npm test -- -t 'adds buildings to the lot'
 I've put some error handling around the call to `add_buildings` so I can test the lots where this fails and 
 see what it is about these `in the wild` lots that causes my code to fail :-)
 
+There is something a bit _funky_ about the lot creation code I'm sure. But I'm inclined to leave this as it
+is. The way I see it, it's like a glitch in the city itself. Something which isn't quite right. Something
+which makes it interesting.
+
+That said I think it might be an idea to take any lots where the edges don't join together and add a closing
+edge to cover that off. I think that might make the buildings code run with more hits than misses too.
+
 # Copyright
 
 (C) Copyright 2023 Peckham Data Centre Ltd. All rights reserved.

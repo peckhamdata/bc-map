@@ -5,7 +5,9 @@ const {CityBuilder,
        add_building,
        add_buildings,
        intersects,
-       distance_between } = require("../src/city_builder.js");
+       distance_between,
+       is_lot_open,
+       close_lot } = require("../src/city_builder.js");
 
 const two_streets = [
       {
@@ -1150,6 +1152,124 @@ it('deals with this one found in the wild', async() => {
 
 })
 
+it('closes an open lot', async() => {
+
+  let open_lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    }
+  ]
+
+  let closed_lot = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 12,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
+
+  const line = is_lot_open(open_lot)
+  open_lot.push(line)
+  await render_square(open_lot, 255, "closed_lot.png");
+  
+})
+
+it('deals with this wild one', async() => {
+
+  const lot_edges = [{"id":3773,"street_id":297,"geometry":{"start":{"x":596,"y":249},"end":{"x":582,"y":220}}},{"id":3767,"street_id":296,"geometry":{"start":{"x":582,"y":220},"end":{"x":580,"y":213}}},{"id":3774,"street_id":297,"geometry":{"start":{"x":596,"y":249},"end":{"x":578,"y":211}}},{"id":3645,"street_id":279,"geometry":{"start":{"x":579,"y":212},"end":{"x":576,"y":211}}},{"id":3644,"street_id":279,"geometry":{"start":{"x":579,"y":212},"end":{"x":578,"y":211}}}]
+  await render_square(lot_edges, 2000, "wild_too.png");
+
+})
 
 
 async function render_square(square, size, filename) {

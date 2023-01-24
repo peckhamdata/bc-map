@@ -1,10 +1,10 @@
-const { CityBuilder, add_buildings } = require("./src/city_builder")
+const { CityBuilder, add_buildings, is_lot_open } = require("./src/city_builder")
 
 // Make a Bezier City
 
 const seed = 1024
 const num_curves = 16
-const scale = 1
+const scale = 10
 
 const city_builder = new CityBuilder(seed, num_curves, scale);
 
@@ -16,9 +16,18 @@ city_builder.intersect_parallels();
 city_builder.split_streets();
 city_builder.add_lots();
 
+
 const building_size = 5;
 
 city_builder.lots.forEach(lot => {
+
+    const line = is_lot_open(lot.edges)
+
+    if (line !== undefined) {
+        console.log(line)
+        lot.edges.push(line)
+    }
+
     try {
         buildings = add_buildings(lot.edges, building_size)
         lot.buildings = buildings
@@ -31,13 +40,12 @@ city_builder.lots.forEach(lot => {
 const hp = require('harry-plotter');
 
 const filename = 'assets/buildings.png'
-var plotter = new hp.JimpPlotter(filename, 1024, 1024);
+var plotter = new hp.JimpPlotter(filename, 1024 * scale, 1024 * scale);
 const bresenham = require("bresenham");
 
 plotter.init(() => {
 
     city_builder.lots.forEach(lot => {
-        console.log(JSON.stringify(lot))
 
         let red = Math.floor(Math.random() * 255);
         let green = Math.floor(Math.random() * 255);
@@ -54,7 +62,6 @@ plotter.init(() => {
         });
 
         if (lot.buildings !== undefined) {
-            console.log(lot.buildings)
 
             lot.buildings.forEach(building => {
                 var points = bresenham(building.geometry.start.x,

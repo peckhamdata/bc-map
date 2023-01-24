@@ -1,4 +1,4 @@
-const { CityBuilder } = require("./src/city_builder")
+const { CityBuilder, is_lot_open } = require("./src/city_builder")
 
 // Make a Bezier City
 
@@ -25,7 +25,12 @@ const bresenham = require("bresenham");
 plotter.init(() => {
 
     city_builder.lots.forEach(lot => {
-        console.log(JSON.stringify(lot))
+        const line = is_lot_open(lot.edges)
+
+        if (line !== undefined) {
+            console.log(line)
+            lot.edges.push(line)
+        }
 
         let red = Math.floor(Math.random() * 255);
         let green = Math.floor(Math.random() * 255);

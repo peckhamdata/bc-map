@@ -126,9 +126,6 @@ const inside_lot = function(line, lot, edge_index) {
     if (i !== edge_index) {
       // Don't try to test intersection with the edge
       // the line started at :-)
-      console.log('line:' + JSON.stringify(line))
-      console.log('edge:' + JSON.stringify(edge))
-      console.log('idx :' + i)
       const hit = intersect(line.geometry.start.x,
         line.geometry.start.y,
         line.geometry.end.x,
@@ -281,6 +278,50 @@ const intersects = function(shape, existing) {
 }
 
 exports.intersects = intersects
+
+const is_lot_open = function(lot_edges) {
+
+  // Get a list of all the start and end points
+  // If any don't appear twice
+  // Join them together
+
+  
+  let all_points = []
+  lot_edges.forEach((edge) => {
+    all_points.push(edge.geometry.start)
+    all_points.push(edge.geometry.end)
+  })
+
+  let unique_points = []
+  let dupes = []
+  all_points.forEach((point) => {
+    let exists = unique_points.find(existing_point => existing_point.x == point.x && existing_point.y == point.y)
+    if(exists == null) {
+      // First time we've seen this so add it to the list
+      unique_points.push(point)
+    } else {
+      // console.log('is a dupe')
+      dupes.push(point)
+    }
+  })
+
+  let new_line = []
+
+  all_points.forEach((point) => {
+    let is_a_dupe = dupes.find(dupe => dupe.x === point.x && dupe.y == point.y)
+    if (is_a_dupe == null) {
+      new_line.push(point)
+    }
+  })
+  if (new_line.length < 2) {
+    return
+  } else {
+    return {geometry: {start: {x: new_line[0].x, y: new_line[0].y},
+                       end:   {x: new_line[1].x, y: new_line[1].y}}}
+  }
+}
+
+exports.is_lot_open = is_lot_open
 
 exports.CityBuilder = class {
   constructor(seed, num_curves, scale) {
