@@ -1266,8 +1266,77 @@ it('closes an open lot', async() => {
 
 it('deals with this wild one', async() => {
 
-  const lot_edges = [{"id":3773,"street_id":297,"geometry":{"start":{"x":596,"y":249},"end":{"x":582,"y":220}}},{"id":3767,"street_id":296,"geometry":{"start":{"x":582,"y":220},"end":{"x":580,"y":213}}},{"id":3774,"street_id":297,"geometry":{"start":{"x":596,"y":249},"end":{"x":578,"y":211}}},{"id":3645,"street_id":279,"geometry":{"start":{"x":579,"y":212},"end":{"x":576,"y":211}}},{"id":3644,"street_id":279,"geometry":{"start":{"x":579,"y":212},"end":{"x":578,"y":211}}}]
-  await render_square(lot_edges, 2000, "wild_too.png");
+  const lot_edges = [{"id":2994,"street_id":243,"geometry":{"start":{"x":1174,"y":857},"end":{"x":908,"y":931}}},{"id":3142,"street_id":263,"geometry":{"start":{"x":1174,"y":857},"end":{"x":1461,"y":1231}}},{"id":2782,"street_id":224,"geometry":{"start":{"x":1461,"y":1231},"end":{"x":799,"y":1150}}},{"geometry":{"start":{"x":908,"y":931},"end":{"x":799,"y":1150}}}]
+  const size = 20
+  const far_away = 1000
+  let buildings = []
+
+  function building_right_angle(edge, edge_index, far_away, start) {
+      // Get right angles along the lot edge
+      const right_angle_lines = right_angle_line(edge, far_away, start)
+
+      // Test if line one is inside the lot
+      const left_hits = inside_lot(right_angle_lines[0], lot_edges, edge_index)
+      if (left_hits.length > 0) {
+
+        let inside_line = {geometry: {start: right_angle_lines[0].geometry.start, 
+                                      end:   left_hits[0]}}
+        let length = distance_between(inside_line.geometry.start.x,
+                                      inside_line.geometry.start.y,      
+                                      inside_line.geometry.end.x,
+                                      inside_line.geometry.end.y) / 4
+    
+        return shorten_line(inside_line, length)
+    
+      } else {
+        const right_hits = inside_lot(right_angle_lines[1], lot_edges, edge_index)
+        if (right_hits.length > 0) {
+  
+          let inside_line = {geometry: {start: right_angle_lines[1].geometry.start, 
+                                        end:   right_hits[0]}}
+          let length = distance_between(inside_line.geometry.start.x,
+                                        inside_line.geometry.start.y,      
+                                        inside_line.geometry.end.x,
+                                        inside_line.geometry.end.y) / 4
+      
+          return shorten_line(inside_line, length)
+      
+        }
+      }
+
+  }
+  lot_edges.forEach((edge, edge_index) => {
+
+    const length = distance_between(edge.geometry.start.x,
+                                      edge.geometry.start.y,
+                                      edge.geometry.end.x,
+                                      edge.geometry.end.y)
+    let start = 10
+    let end = 2
+    do {
+
+      const left_line = building_right_angle(edge, edge_index, far_away, start)
+      if (left_line !== undefined) {
+        buildings.push(left_line)
+      }
+
+      const right_line = building_right_angle(edge, edge_index, far_away, end)
+      if (right_line !== undefined) {
+        buildings.push(right_line)
+      }
+
+      if (left_line !== undefined && right_line !== undefined) {
+        buildings.push({geometry: {start: left_line.geometry.end,
+                                  end:   right_line.geometry.end}})  
+
+      }
+
+      start = end + 1
+      end += size
+    } while(end <= length);
+
+  })
+  await render_square(buildings, 2000, "wild_too.png");
 
 })
 

@@ -61,35 +61,35 @@ const distance_between = function(x1, y1, x2, y2) {
 exports.distance_between = distance_between
 
 const shorten_line = function(line, length) {
-  // From: https://stackoverflow.com/a/24377363/1064619
-  // Determine line lengths
-  var xlen = line.geometry.end.x - line.geometry.start.x;
-  var ylen = line.geometry.end.y - line.geometry.start.y;
+    // From: https://stackoverflow.com/a/24377363/1064619
+    // Determine line lengths
+    var xlen = line.geometry.end.x - line.geometry.start.x;
+    var ylen = line.geometry.end.y - line.geometry.start.y;
 
-  // Determine hypotenuse length
-  var hlen = Math.sqrt(Math.pow(xlen,2) + Math.pow(ylen,2));
+    // Determine hypotenuse length
+    var hlen = Math.sqrt(Math.pow(xlen,2) + Math.pow(ylen,2));
 
-  // The variable identifying the length of the `shortened` line.
-  // In this case 50 units.
-  var smallerLen = length;
+    // The variable identifying the length of the `shortened` line.
+    // In this case 50 units.
+    var smallerLen = length;
 
-  // Determine the ratio between they shortened value and the full hypotenuse.
-  var ratio = smallerLen / hlen;
+    // Determine the ratio between they shortened value and the full hypotenuse.
+    var ratio = smallerLen / hlen;
 
-  var smallerXLen = xlen * ratio;
-  var smallerYLen = ylen * ratio;
+    var smallerXLen = xlen * ratio;
+    var smallerYLen = ylen * ratio;
 
-  // The new X point is the starting x plus the smaller x length.
-  var smallerX = line.geometry.start.x + smallerXLen;
+    // The new X point is the starting x plus the smaller x length.
+    var smallerX = line.geometry.start.x + smallerXLen;
 
-  // Same goes for the new Y.
-  var smallerY = line.geometry.start.y + smallerYLen;
+    // Same goes for the new Y.
+    var smallerY = line.geometry.start.y + smallerYLen;
 
-  return {geometry: {start: {x: line.geometry.start.x,
-                             y: line.geometry.start.y},
-                     end:   {x: Math.floor(smallerX),
-                             y: Math.floor(smallerY)}}
-                            }
+    return {geometry: {start: {x: line.geometry.start.x,
+                              y: line.geometry.start.y},
+                       end:   {x: Math.floor(smallerX),
+                              y: Math.floor(smallerY)}}
+                              }
 }
 
 exports.shorten_line = shorten_line;
@@ -149,77 +149,128 @@ const inside_lot = function(line, lot, edge_index) {
 
 exports.inside_lot = inside_lot;
 
-const add_building = function(lot_edges, edge_index, from, to) {
-  try {
-    // let size = 20
-    const magic = 1000 // Far off distance for end of right angle line
+// const add_building = function(lot_edges, edge_index, from, to) {
+//   // try {
+//     // let size = 20
+//     const magic = 5000 // Far off distance for end of right angle line
 
-    let building = []
+//     let building = []
 
-    // Attempt to draw the edge of a building as a right angle
-    // from the edge of the lot
+//     // Attempt to draw the edge of a building as a right angle
+//     // from the edge of the lot
 
-    let perps = right_angle_line(lot_edges[edge_index], magic, from)
-    console.log('right angle lines from lot edge:' + perps)
-    // Find out which of the two right angle lines
-    // is heading inside the lot?
-    let perp_idx = 0
-    let hits = inside_lot(perps[0], lot_edges, edge_index)
-    if( hits === false) {
-      console.log('line is outside lot')
-      perp_idx = 1
-      hits = inside_lot(perps[1], lot_edges, edge_index)
-    } else {
-      console.log('line is inside lot')
-    }
-    // building.push(perps[perp_idx])
-    let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-    console.log('first_line:' + JSON.stringify(first_line))
-    // // Shorten line so it fits inside lot
-    // building.push(first_line)
-    // console.log(first_line.geometry.start.x,
-    //             first_line.geometry.start.y,      
-    //             hits[0].x,
-    //             hits[0].y)
-    
-    let length = distance_between(first_line.geometry.start.x,
-                                  first_line.geometry.start.y,      
-                                  first_line.geometry.end.x,
-                                  first_line.geometry.end.y) / 4
+//     let perps = right_angle_line(lot_edges[edge_index], magic, from)
+//     // console.log('right angle lines from lot edge:' + perps)
+//     // Find out which of the two right angle lines
+//     // is heading inside the lot?
+//     let perp_idx = 0
+//     let hits = inside_lot(perps[0], lot_edges, edge_index)
+//     if( hits === false) {
+//       // console.log('line is outside lot')
+//       perp_idx = 1
+//       hits = inside_lot(perps[1], lot_edges, edge_index)
+//     } else {
+//       // console.log('line is inside lot')
+//     }
+//     // building.push(perps[perp_idx])
+//     let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
+//     console.log(JSON.stringify(first_line))
+//     let length = 10 // distance_between(first_line.geometry.start.x,
+//     //                               first_line.geometry.start.y,      
+//     //                               first_line.geometry.end.x,
+//     //                               first_line.geometry.end.y) / 4
 
-    building.push(shorten_line(first_line, length))
+//     building.push(shorten_line(first_line, length))
 
-    // Get second right angle from lot edge
+//     // Get second right angle from lot edge
 
-    perps = right_angle_line(lot_edges[edge_index], magic, to)
+//     perps = right_angle_line(lot_edges[edge_index], magic, to)
   
-    // Which one is inside lot?
-    perp_idx = 0
-    hits = inside_lot(perps[0], lot_edges, edge_index)
-    if( hits === false) {
-      perp_idx = 1
-      hits = inside_lot(perps[1], lot_edges, edge_index)
+//     // Which one is inside lot?
+//     perp_idx = 0
+//     hits = inside_lot(perps[0], lot_edges, edge_index)
+//     if( hits === false) {
+//       perp_idx = 1
+//       hits = inside_lot(perps[1], lot_edges, edge_index)
+//     }
+//     let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
+//     console.log(second_line)
+//     console.log(hits)    
+//     length = 10 // distance_between(second_line.geometry.start.x,
+//     //   second_line.geometry.start.y,      
+//     //   second_line.geometry.end.x,
+//     //   second_line.geometry.end.y) / 4
+
+//     building.push(shorten_line(second_line, length))
+
+//     // Join them together
+
+//     building.push({geometry: {start: building[0].geometry.end,
+//                               end:   building[1].geometry.end}})  
+
+//     return building
+//   // }
+//   // catch(err) {
+//   //   console.log('ERROR:' + err + ' processing ' + JSON.stringify(lot_edges))
+//   // } 
+// }
+
+const add_building = function(lot_edges, edge_index, start, end) {
+
+  const far_away = 1000;
+
+  function building_right_angle(edge, edge_index, far_away, start) {
+    // Get right angles along the lot edge
+    const right_angle_lines = right_angle_line(edge, far_away, start)
+
+    // Test if line one is inside the lot
+    const left_hits = inside_lot(right_angle_lines[0], lot_edges, edge_index)
+    if (left_hits.length > 0) {
+
+      let inside_line = {geometry: {start: right_angle_lines[0].geometry.start, 
+                                    end:   left_hits[0]}}
+      let length = distance_between(inside_line.geometry.start.x,
+                                    inside_line.geometry.start.y,      
+                                    inside_line.geometry.end.x,
+                                    inside_line.geometry.end.y) / 4
+  
+      return shorten_line(inside_line, length)
+  
+    } else {
+      const right_hits = inside_lot(right_angle_lines[1], lot_edges, edge_index)
+      if (right_hits.length > 0) {
+
+        let inside_line = {geometry: {start: right_angle_lines[1].geometry.start, 
+                                      end:   right_hits[0]}}
+        let length = distance_between(inside_line.geometry.start.x,
+                                      inside_line.geometry.start.y,      
+                                      inside_line.geometry.end.x,
+                                      inside_line.geometry.end.y) / 4
+    
+        return shorten_line(inside_line, length)
+    
+      }
     }
-
-    let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-
-    length = distance_between(second_line.geometry.start.x,
-      second_line.geometry.start.y,      
-      second_line.geometry.end.x,
-      second_line.geometry.end.y) / 4
-
-    building.push(shorten_line(second_line, length))
-
-    // Join them together
-
-    building.push({geometry: {start: building[0].geometry.end,
-                              end:   building[1].geometry.end}})  
-
-    return building
   }
-  catch(err) {
-    console.log(err + 'processing' + JSON.stringify(lot_edges))
-  } 
+  let building = []
+  const left_line = building_right_angle(lot_edges[edge_index], edge_index, far_away, start)
+  if (left_line !== undefined) {
+    building.push(left_line)
+  }
+
+  const right_line = building_right_angle(lot_edges[edge_index], edge_index, far_away, end)
+  if (right_line !== undefined) {
+    building.push(right_line)
+  }
+
+  if (left_line !== undefined && right_line !== undefined) {
+    building.push({geometry: {start: left_line.geometry.end,
+                              end:   right_line.geometry.end}})  
+
+  }
+
+  return(building)
+
 }
 
 exports.add_building = add_building
@@ -237,15 +288,15 @@ const add_buildings = function(lot_edges, size) {
     let end = size
     do {
       const building = add_building(lot_edges, i, start, end)
-      if (!intersects(building, buildings)) {
-        buildings = buildings.concat(building)
-      }
+      // if (!intersects(building, buildings)) {
+      //   buildings = buildings.concat(building)
+      // }
+      buildings = buildings.concat(building)
       start = end + 1
-      end += 20
+      end += size
     } while(end <= length);
 
   })
-
   return buildings;
 }
 
