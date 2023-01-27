@@ -1425,6 +1425,87 @@ it('cleans out the overlaps', async () => {
   console.log(clean_buildings)
 })
 
+it('does this quick test', async () => {
+
+  let lot_edges = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 12,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
+
+  const lot_buildings = add_buildings_to_lot_edges(lot_edges)
+  const clean_buildings = []
+  lot_buildings.forEach(edge => {
+    const clean = remove_overlaping_buildings(edge)
+    clean_buildings.push(clean)
+  })
+
+  const flattened = []
+  clean_buildings.forEach(edge => {
+    edge.forEach(building => {
+      building.geometry.forEach(line => {
+        flattened.push(line)
+      })
+    })
+  })
+
+  await render_square(flattened, 200, 'overlap.png');	
+
+})
+
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
   const bresenham = require("bresenham");
