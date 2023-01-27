@@ -149,71 +149,6 @@ const inside_lot = function(line, lot, edge_index) {
 
 exports.inside_lot = inside_lot;
 
-// const add_building = function(lot_edges, edge_index, from, to) {
-//   // try {
-//     // let size = 20
-//     const magic = 5000 // Far off distance for end of right angle line
-
-//     let building = []
-
-//     // Attempt to draw the edge of a building as a right angle
-//     // from the edge of the lot
-
-//     let perps = right_angle_line(lot_edges[edge_index], magic, from)
-//     // console.log('right angle lines from lot edge:' + perps)
-//     // Find out which of the two right angle lines
-//     // is heading inside the lot?
-//     let perp_idx = 0
-//     let hits = inside_lot(perps[0], lot_edges, edge_index)
-//     if( hits === false) {
-//       // console.log('line is outside lot')
-//       perp_idx = 1
-//       hits = inside_lot(perps[1], lot_edges, edge_index)
-//     } else {
-//       // console.log('line is inside lot')
-//     }
-//     // building.push(perps[perp_idx])
-//     let first_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-//     console.log(JSON.stringify(first_line))
-//     let length = 10 // distance_between(first_line.geometry.start.x,
-//     //                               first_line.geometry.start.y,      
-//     //                               first_line.geometry.end.x,
-//     //                               first_line.geometry.end.y) / 4
-
-//     building.push(shorten_line(first_line, length))
-
-//     // Get second right angle from lot edge
-
-//     perps = right_angle_line(lot_edges[edge_index], magic, to)
-  
-//     // Which one is inside lot?
-//     perp_idx = 0
-//     hits = inside_lot(perps[0], lot_edges, edge_index)
-//     if( hits === false) {
-//       perp_idx = 1
-//       hits = inside_lot(perps[1], lot_edges, edge_index)
-//     }
-//     let second_line = {geometry: {start: perps[perp_idx].geometry.start, end: hits[0]}}
-//     console.log(second_line)
-//     console.log(hits)    
-//     length = 10 // distance_between(second_line.geometry.start.x,
-//     //   second_line.geometry.start.y,      
-//     //   second_line.geometry.end.x,
-//     //   second_line.geometry.end.y) / 4
-
-//     building.push(shorten_line(second_line, length))
-
-//     // Join them together
-
-//     building.push({geometry: {start: building[0].geometry.end,
-//                               end:   building[1].geometry.end}})  
-
-//     return building
-//   // }
-//   // catch(err) {
-//   //   console.log('ERROR:' + err + ' processing ' + JSON.stringify(lot_edges))
-//   // } 
-// }
 
 const add_building = function(lot_edges, edge_index, start, end) {
 
@@ -288,16 +223,41 @@ const add_buildings = function(lot_edges, size) {
     let end = size
     do {
       const building = add_building(lot_edges, i, start, end)
-      // if (!intersects(building, buildings)) {
-      //   buildings = buildings.concat(building)
-      // }
-      buildings = buildings.concat(building)
+      buildings.push(building)
       start = end + 1
       end += size
     } while(end <= length);
 
   })
-  return buildings;
+
+  // Deal with overlaps
+  let buildings_added = []
+  buildings.forEach((building, idx) => {
+    let hit = undefined
+    building.forEach(line => {
+      // does this line intersect with that of any buildings we've added so far?
+      buildings.forEach((existing_building, existing_idx) => {
+        if (idx !== existing_idx) {
+          existing_building.forEach(existing_line => {
+            hit = intersect(line.geometry.start.x,
+                            line.geometry.start.y,
+                            line.geometry.end.x,
+                            line.geometry.end.y,
+                            existing_line.geometry.start.x,
+                            existing_line.geometry.start.y,
+                            existing_line.geometry.end.x,
+                            existing_line.geometry.end.y)
+          })
+        }
+      })
+    })
+    if(hit === undefined || hit === false) {
+      buildings_added.push(building)
+    } else {
+      console.log('HIT!')
+    }
+  })
+  return buildings_added;
 }
 
 exports.add_buildings = add_buildings
@@ -1011,3 +971,81 @@ exports.CityBuilder = class {
                      end:   {x: x_offset + size, y: y_offset + size}}});
   }
 }
+
+const add_buildings_to_lot_edges = function(lot_edges) {
+
+  const size = 20
+  let edge_buildings = []
+  
+  lot_edges.forEach((edge, i) => {
+
+    let buildings = []
+
+    const length = distance_between(edge.geometry.start.x,
+                                    edge.geometry.start.y,
+                                    edge.geometry.end.x,
+                                    edge.geometry.end.y)
+    let start = 10
+    let end = size
+    do {
+      const building = add_building(lot_edges, i, start, end)
+      buildings.push({geometry: building})
+      start = end + 1
+      end += size
+    } while(end <= length);
+
+    edge_buildings.push(buildings)
+
+  })
+
+  edge_buildings.forEach((edge, i) => {
+    edge.forEach(building => {
+      building.geometry.forEach(line => {
+
+        // Does the line intersect with buildings on any of the other edges?
+
+        // Lets have a look at all the other lines
+        edge_buildings.forEach((other_edge, j) => {
+          if (j !== i) {
+            // It's an other edge so we are interested in its buildings
+            other_edge.forEach(other_edge_building => {
+              other_edge_building.geometry.forEach(other_line => {
+                const hit = intersect(line.geometry.start.x,
+                                      line.geometry.start.y,
+                                      line.geometry.end.x,
+                                      line.geometry.end.y,
+                                      other_line.geometry.start.x,
+                                      other_line.geometry.start.y,
+                                      other_line.geometry.end.x,
+                                      other_line.geometry.end.y)
+                if(hit) {
+                  if (hit.x || hit.y) {
+                    building.overlaps = true
+                  }
+                }
+              })
+            })
+          }
+        })
+      })
+    })
+  })
+
+  return edge_buildings
+
+}
+
+exports.add_buildings_to_lot_edges = add_buildings_to_lot_edges
+
+const remove_overlaping_buildings = function(buildings) {
+
+  buildings.forEach(building => {
+    buildings = buildings.filter(function( building ) {
+      return building.overlaps !== true;
+  });
+  })
+
+  return buildings
+}
+
+exports.remove_overlaping_buildings = remove_overlaping_buildings

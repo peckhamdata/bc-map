@@ -7,6 +7,8 @@ const {CityBuilder,
        intersects,
        distance_between,
        is_lot_open,
+       add_buildings_to_lot_edges,
+       remove_overlaping_buildings,
        close_lot } = require("../src/city_builder.js");
 
 const two_streets = [
@@ -1025,7 +1027,11 @@ it('adds many buildings to the lot', async() => {
   ]
   
   const buildings = add_buildings(lot, 10)
-  await render_square(buildings, 250, "assets/lot_with_many_buildings.png");
+  let building_edges = []
+  buildings.forEach(building => {
+    building_edges = building_edges.concat(building)
+  })
+  await render_square(building_edges, 250, "assets/lot_with_many_buildings.png");
 
 })
 
@@ -1340,6 +1346,84 @@ it('deals with this wild one', async() => {
 
 })
 
+it('adds buildings to lot edges', async() => {
+
+  let lot_edges = [
+    {
+      "id": 22,
+      "street_id": 3,
+      "geometry": {
+        "start": {
+          "x": 10,
+          "y": 10
+        },
+        "end": {
+          "x": 200,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": 20,
+      "street_id": 2,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 20
+        },
+        "end": {
+          "x": 200,
+          "y": 200
+        }
+      }
+    },
+    {
+      "id": 11,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 200,
+          "y": 200
+        },
+        "end": {
+          "x": 50,
+          "y": 100
+        }
+      }
+    },
+    {
+      "id": 12,
+      "street_id": 1,
+      "geometry": {
+        "start": {
+          "x": 50,
+          "y": 100
+        },
+        "end": {
+          "x": 10,
+          "y": 10
+        }
+      }
+    }
+  ]
+
+  const lot_buildings = add_buildings_to_lot_edges(lot_edges)
+
+  console.log(lot_buildings)
+
+})
+
+it('cleans out the overlaps', async () => {
+
+  const buildings = [
+    {geometry: 'blah', overlaps: true},
+    {geometry: 'bof'},
+    {geometry: 'bruh'}
+  ]
+  const clean_buildings = remove_overlaping_buildings(buildings)
+
+  console.log(clean_buildings)
+})
 
 async function render_square(square, size, filename) {
   const hp = require("harry-plotter");
