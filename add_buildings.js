@@ -1,10 +1,10 @@
-const { CityBuilder, add_buildings, is_lot_open } = require("./src/city_builder")
+const { CityBuilder, add_buildings, is_lot_open, add_buildings_to_lot_edges } = require("./src/city_builder")
 
 // Make a Bezier City
 
 const seed = 1024
 const num_curves = 16
-const scale = 10
+const scale = 2
 
 const city_builder = new CityBuilder(seed, num_curves, scale);
 
@@ -17,19 +17,18 @@ city_builder.split_streets();
 city_builder.add_lots();
 
 
-const building_size = 5;
+const building_size = 20;
 
 city_builder.lots.forEach(lot => {
 
     const line = is_lot_open(lot.edges)
 
     if (line !== undefined) {
-        console.log(line)
         lot.edges.push(line)
     }
 
     try {
-        buildings = add_buildings(lot.edges, building_size)
+        buildings = add_buildings_to_lot_edges(lot.edges)  // building_size
         lot.buildings = buildings
     }
     catch (err){
@@ -58,21 +57,25 @@ plotter.init(() => {
                 edge.geometry.end.x,
                 edge.geometry.end.y);
             plotter.plot_points(points, colour);
-
         });
 
         if (lot.buildings !== undefined) {
-
             lot.buildings.forEach(building => {
-                var points = bresenham(building.geometry.start.x,
-                    building.geometry.start.y,
-                    building.geometry.end.x,
-                    building.geometry.end.y);
-                plotter.plot_points(points, colour);
-            });
+                building.forEach(lines => {
+                    lines.geometry.forEach(line => {
+                    var points = bresenham(line.geometry.start.x,
+                                           line.geometry.start.y,
+                                           line.geometry.end.x,
+                                           line.geometry.end.y);
+                    plotter.plot_points(points, colour);
+
+                    })
+                })
+            })
+        }
         }
     
-    });
+    );
 
     plotter.write();
              
