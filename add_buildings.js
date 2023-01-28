@@ -62,14 +62,15 @@ plotter.init(() => {
         if (lot.buildings !== undefined) {
             lot.buildings.forEach(building => {
                 building.forEach(lines => {
-                    lines.geometry.forEach(line => {
-                    var points = bresenham(line.geometry.start.x,
-                                           line.geometry.start.y,
-                                           line.geometry.end.x,
-                                           line.geometry.end.y);
-                    plotter.plot_points(points, colour);
-
-                    })
+                    if (lines.overlaps === undefined) {
+                        lines.geometry.forEach(line => {
+                            var points = bresenham(line.geometry.start.x,
+                                                line.geometry.start.y,
+                                                line.geometry.end.x,
+                                                line.geometry.end.y);
+                            plotter.plot_points(points, colour);
+                        })
+                    }
                 })
             })
         }
