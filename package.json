@@ -4,7 +4,7 @@
   "description": "Map of Bezier City",
   "main": "possible.js",
   "dependencies": {
-    "bezier-js": "^2.5.1",
+    "bezier-js": "github:Pomax/bezierjs",
     "bresenham": "^0.0.4",
     "harry-plotter": "0.0.2",
     "jest": "^27.0.3",
@@ -12,9 +12,10 @@
     "pixi.js": "^5.2.1",
     "selenium-webdriver": "^4.0.0-alpha.7"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack",
+    "start": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -29,5 +30,13 @@
   "bugs": {
     "url": "https://github.com/peckhamdata/bc-map/issues"
   },
-  "homepage": "https://github.com/peckhamdata/bc-map#readme"
+  "homepage": "https://github.com/peckhamdata/bc-map#readme",
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "babel-loader": "^9.2.1",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.2.0"
+  }
 }
