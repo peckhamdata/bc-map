@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bézier Curve Renderer with Junctions</title>
+    <style>
+        body { text-align: center; }
+        canvas { border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <h1>Bézier Curve Renderer with Junctions</h1>
+    <canvas id="bezierCanvas" width="1024" height="1024"></canvas>
+    <script>
+        async function loadJSON() {
+            const response = await fetch('city_1_with_junctions.json');
+            return response.json();
+        }
+
+        function drawBezierCurves(data) {
+            const canvas = document.getElementById('bezierCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'blue';
+            
+            data.forEach(curve => {
+                const { start, control, end } = curve.geometry;
+                ctx.beginPath();
+                ctx.moveTo(start.x, start.y);
+                ctx.quadraticCurveTo(control.x, control.y, end.x, end.y);
+                ctx.stroke();
+            });
+
+            drawJunctions(data, ctx);
+        }
+
+        function drawJunctions(data, ctx) {
+            ctx.fillStyle = 'red';
+            
+            data.forEach(curve => {
+                curve.junctions.forEach(junction => {
+                    ctx.beginPath();
+                    ctx.arc(junction.x, junction.y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            });
+        }
+
+        async function render() {
+            const data = await loadJSON();
+            drawBezierCurves(data);
+        }
+
+        render();
+    </script>
+</body>
+</html>
