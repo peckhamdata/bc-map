@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bézier City</title>
+    <style>
+        body { margin: 0; background: black; color: white; text-align: center; }
+        canvas { display: block; margin: auto; }
+    </style>
+</head>
+<body>
+    <h1>Bézier City</h1>
+    <canvas id="cityCanvas"></canvas>
+    <script>
+        const SCALE = 0.05;  // 🔥 Scale adjustment
+        const OFFSET_X = 5000; // 🔥 Adjust these if needed
+        const OFFSET_Y = 5000;
+
+        const canvas = document.getElementById("cityCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function transformPoint(x, y) {
+            let tx = (x - OFFSET_X) * SCALE + canvas.width / 2;
+            let ty = (y - OFFSET_Y) * SCALE + canvas.height / 2;
+            return [tx, ty];
+        }
+
+        function drawCity(cityData) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("Drawing city...");
+
+            // Draw main streets (green)
+            cityData.streets.forEach(street => {
+                ctx.beginPath();
+                street.points.forEach((point, index) => {
+                    let [tx, ty] = transformPoint(point[0], point[1]);
+                    if (index === 0) {
+                        ctx.moveTo(tx, ty);
+                    } else {
+                        ctx.lineTo(tx, ty);
+                    }
+                    console.log(`Street ${street.id}, Point ${index}: (${point[0]}, ${point[1]}) -> (${tx}, ${ty})`);
+                });
+                ctx.strokeStyle = "green";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+
+            // Draw cross streets (red)
+            cityData.streets.filter(s => s.type === "cross").forEach(street => {
+                ctx.beginPath();
+                street.points.forEach((point, index) => {
+                    let [tx, ty] = transformPoint(point[0], point[1]);
+                    if (index === 0) {
+                        ctx.moveTo(tx, ty);
+                    } else {
+                        ctx.lineTo(tx, ty);
+                    }
+                });
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+        }
+
+        // Load city JSON
+        fetch("bezier_city.json")
+            .then(response => response.json())
+            .then(cityData => {
+                console.log("Loaded JSON successfully:", cityData);
+                drawCity(cityData);
+            })
+            .catch(error => console.error("Error loading city JSON:", error));
+    </script>
+</body>
+</html>
